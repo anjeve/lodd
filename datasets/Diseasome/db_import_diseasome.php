@@ -10,16 +10,21 @@ require_once("../scripts/lodd_utils.php");
 
 $seperate_dbs = array("diseaseGenes");
 
-require_once("../config/databaseconfig.php");
+$database_drugbank = "lodd";
+$database_diseasome = "lodd_diseasome";
+
+$database_drugbank_table_drug_targets = "drug_targets";
+$database_drugbank_table_targets = "targets";
+
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
-mysql_select_db ("lodd_diseasome");
+mysql_select_db ($database_diseasome);
 
 $file_s2 = "supplementary_tableS2.txt";
-
 $file = "supplementary_tableS1.txt";
 $file_hgnc = "hgnc.n3";
 $database_disease = "diseases";
 $database_disease_genes = "disease_genes";
+$database_drug_targets = "drug_targets";
 
 $genes = array();
 
@@ -74,7 +79,6 @@ while (!feof($file_handle)) {
 }
 
 
-
 $file_handle = fopen($file_hgnc, "r");
 if (!$file_handle) {
 	die ("File not found ".$file);
@@ -113,6 +117,7 @@ echo "ANALYZATION DONE\n";
 
 mysql_query ("drop table ".$database_disease.";");
 mysql_query ("drop table ".$database_disease_genes.";");
+mysql_query ("drop table ".$database_drug_targets.";");
 
 $sql_query = "CREATE TABLE IF NOT EXISTS ".$database_disease." ( 
 	id int(10) NOT NULL,
@@ -142,6 +147,15 @@ if (!mysql_query ($sql_query)) {
 	die(mysql_error() . " - query: ".$sql_query);
 }
 
+$sql_query = "CREATE TABLE IF NOT EXISTS ".$database_drug_targets." ( 
+	disease int(10) NOT NULL,
+	drug varchar(15) NOT NULL,
+ 	PRIMARY KEY  (disease, drug)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+if (!mysql_query ($sql_query)) {
+	die(mysql_error() . " - query: ".$sql_query);
+}
+
 echo "DB CREATION DONE\n";
 
 foreach ($data as $disease_id => $disease_info) {
@@ -166,6 +180,29 @@ foreach ($data as $disease_id => $disease_info) {
 			foreach ($content as $gene) {
 				$gene = trim(str_replace("\"", "", $gene));
 				$gene = trim(preg_replace("/\([0-9]*\)/", "", $gene));
+				// DrugBank Link
+				mysql_select_db ($database_drugbank);
+				
+				// bio2rdf symbol
+				$drugbank_ids = array();
+				$mysqlquery = 'SELECT '.$database_drugbank_table_drug_targets.'.drug FROM '.$database_drugbank_table_drug_targets.', '.$database_drugbank_table_targets.' where '.$database_drugbank_table_targets.'.geneName = "'.$gene.'" AND '.$database_drugbank_table_drug_targets.'.target = '.$database_drugbank_table_targets.'.id';
+				$result = mysql_query($mysqlquery);
+				while ($row = mysql_fetch_row($result)) {
+					$drugbank_ids[] = $row[0];
+				}
+
+				mysql_select_db ($database_diseasome);
+				
+				foreach ($drugbank_ids as $drugbank_id) {
+					$sql_query = "INSERT INTO ".$database_drug_targets." (drug, disease) VALUES ('".$drugbank_id."', '".$disease_id."');";
+					if (!mysql_query ($sql_query)) {
+						if (strpos(mysql_error(), "Duplicate entry") === false) {
+							die("[DIE] linkage, drug ".$drugbank_id." - disease ".$disease_id." : ". mysql_error() . " - query: ".$gene_sql_query);
+						}
+					}
+				}
+					
+				// /DrugBank Link
 				$sql1 = null;
 				$sql2 = null;
 				foreach ($hgnc_matching as $hgnc_symbol => $hgnc_entry) {
