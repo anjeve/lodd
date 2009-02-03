@@ -8,6 +8,8 @@
 
 require_once("../scripts/lodd_utils.php");
 
+$file = "drugbank_drugcards.txt";
+
 $foaf_pages = array("","");
 
 $special_seperate_dbs = array("drugInteractions");
@@ -22,12 +24,9 @@ $enzymes_seperate_dbs = array();
 
 $drugbankLink_fields = array("contraindicationInsert", "interactionInsert", "patientInformationInsert", "msdsFiles");
 
-require_once("../config/databaseconfig.php");
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
 mysql_select_db ("lodd");
 
-$file = "drugbank_varenicline.txt";
-//$file = "drugbank_drugcards.txt";
 $database_name = "drugs";
 $database_name_targets = "targets";
 $database_name_enzymes = "enzymes";
@@ -263,22 +262,6 @@ foreach ($data as $drugcard_id => $drugcard) {
 			$old_dt_id = $dt_id;
 			$dt_id = $drugcard["drugTarget".$match[1]."Id"];
 			if (($dt_id != $old_dt_id) && ($dt_id != null)) {
-				/* 
-				???
-				
-				$dt_sql_query1 = substr($dt_sql_query1, 0, -2).") ";
-				$dt_sql_query2 = substr($dt_sql_query2, 0, -2).") ";
-				if (!mysql_query ($dt_sql_query1.$dt_sql_query2)) {
-					if (strpos(mysql_error(), "Duplicate entry") === false) {
-						die("[DIE] drug target ".$dt_id." at drugcard ".$drugcard_id." : ". mysql_error() . " - query: ".$dt_sql_query1.$dt_sql_query2);
-					}
-				}	
-				*/
-				/*
-				$dt_sql_query1 = "INSERT INTO ".$database_name_targets." (";
-				$dt_sql_query2 = "VALUES (";
-				*/
-				
 				if ($old_dt_id != null) {
 					$dt_sql_query1 = substr($dt_sql_query1, 0, -2).") ";
 					$dt_sql_query2 = substr($dt_sql_query2, 0, -2).") ";

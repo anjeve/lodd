@@ -1,10 +1,13 @@
 <?php
 
 /**
- * The LODD Utils provide functions for handling XML and strings.
+ * The LODD Utils includes the database configuration and
+ * provides functions for handling XML and strings.
  *
  * @author	Anja Jentzsch <mail@anjajentzsch.de>
  */
+
+require_once("../config/databaseconfig.php");
 
 $parent_subtree = array();
 

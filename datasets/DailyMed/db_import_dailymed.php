@@ -16,8 +16,6 @@ $seperate_tables = array(
 	"side_effects", "contraindications", "adverse_reactions", "overdosage", "inactiveIngredient", "dosage");
 //	"dosage_administration" => array("dosage_label", "dosage"));
 
-require_once("../config/databaseconfig.php");
-
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
 mysql_select_db ($database_dailymed);
 
