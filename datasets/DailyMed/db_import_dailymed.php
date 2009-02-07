@@ -8,13 +8,9 @@
 
 require_once("../scripts/lodd_utils.php");
 
-$database_dailymed = "lodd_dailymed";
-$database_drugbank = "lodd";
-
 $database_table_drugs = "drugs";
 $seperate_tables = array(
-	"side_effects", "contraindications", "adverse_reactions", "overdosage", "inactiveIngredient", "dosage");
-//	"dosage_administration" => array("dosage_label", "dosage"));
+	"side_effects", "contraindications", "adverse_reactions", "overdosage", "inactiveIngredient", "dosage", "indications");
 
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
 mysql_select_db ($database_dailymed);
@@ -23,7 +19,7 @@ $database_drugbank_table_drugs = "drugs";
 $database_drugbank_table_brandnames = "brandnames";
 $database_drugbank_table_synonyms = "synonyms";
 
-$path = "dailymed/1";
+$path = "dataset/1";
 if ($dir=opendir($path)) {
 	while($file=readdir($dir)) {
 		if (!is_dir($file) && (strpos($file,".xml") !== false)) {
@@ -33,7 +29,7 @@ if ($dir=opendir($path)) {
 	closedir($dir);
 }
 
-//mysql_query ("drop table ".$database_table_drugs.";");
+mysql_query ("drop table ".$database_table_drugs.";");
 
 $sql_query = "CREATE TABLE IF NOT EXISTS ".$database_table_drugs." ( 
 	id int(10) NOT NULL,
@@ -55,7 +51,7 @@ foreach ($seperate_tables as $name => $seperate_db) {
 	if (!is_array($seperate_db)) {
 		$name = $seperate_db;
 	}
-//	mysql_query ("drop table ".$name.";");
+	mysql_query ("drop table ".$name.";");
 	$sql_query = "CREATE TABLE IF NOT EXISTS ".$name." (
 		drug int(10) NOT NULL,";
 	if (!is_array($seperate_db)) {
@@ -76,11 +72,14 @@ $drug_id = 0;
 $identified_drugs = 0;
 $identified_drugs_generic = 0;
 
+$found_inactive_ingredients = 0;
+$found_indications = 0;
+
 foreach ($files as $file) {
 	unset($xmlDrugFile);
 	$drug_id = $drug_id+1;
 //	if ($file == "F0FF4F27-5185-4881-A749-C6B7A0CA5696.xml") {
-	if (($drug_id > 3741)) {
+	if (($drug_id >= 0)) {
 //		echo $file;
 		//$xmlDrugFile = new XMLParser("dailymed/F0FF4F27-5185-4881-A749-C6B7A0CA5696.xml");
 		$xmlDrugFile = new XMLParser($path."/".$file);
@@ -181,85 +180,15 @@ foreach ($files as $file) {
 		if (!mysql_query ($sql_query)) {
 			die(mysql_error() . " - query: ".$sql_query);
 		}		
-				
-/*
-		if (array_searchRecursive("MANUFACTUREDMEDICINE", $xmlDrugFile->data[0]) !== false ) {
-			if ($parent_subtree["child"][1]["name"] == "NAME") {
-				$drugName = str_replace("'", "\'", $parent_subtree["child"][1]["content"]);
-				// echo $drug_id . " - ". $drugName. "\n";
-				if ($parent_subtree["child"][2]["attributes"]["DISPLAYNAME"]) {
-					$temp = $parent_subtree["child"][2]["attributes"]["DISPLAYNAME"];
-					$temp = ucwords(strtolower($temp));
-					$fullDrugName = $drugName . " (" . $temp . ")";
-				}
-
-				$sql_drugbank_id = null;
-				$sql_drugbank_id_field = null;
-				
-				// DRUGBANK ID
-				mysql_select_db ($database_drugbank);
-				$result = mysql_query('SELECT drug FROM '.$database_drugbank_table_brandnames.' where field="'.$drugName.'"');
-				$drugbank_id = array();
-				while ($row = mysql_fetch_row($result)) {
-					$drugbank_id[] = $row[0];
-				}
-				
-				if (array_searchRecursive("ACTIVEINGREDIENTSUBSTANCE", $xmlDrugFile->data[0]) !== false ) {
-					$drugbank_equivalent_found = false;
-					if ($parent_subtree["child"][1]["name"] == "NAME") {
-						$activeIngridient = str_replace("'", "\'", $parent_subtree["child"][1]["content"]);
-					
-						$sql_drug2 = null;
-						if ($parent_subtree["child"][2]["child"][0]["name"] == "ACTIVEMOIETY") {
-							$activeIngridient2 = str_replace("'", "\'", $parent_subtree["child"][2]["child"][0]["child"][1]["content"]);
-							if ($activeIngridient2 != null) {
-								$sql_drug2 = ' OR field="'.$activeIngridient2.'"';
-								$sql_drug2_generic = ' OR genericName="'.$activeIngridient2.'"';
-							}
-						}
-
-						$result = mysql_query('SELECT drug FROM '.$database_drugbank_table_synonyms.' where field="'.$activeIngridient.'"'.$sql_drug2);
-						$drugbank_id1 = array();
-						while ($row = mysql_fetch_row($result)) {
-							$drugbank_id1[] = $row[0];
-						}
-						$result = mysql_query('SELECT id FROM '.$database_drugbank_table_drugs.' where genericName="'.$activeIngridient.'"'.$sql_drug2_generic);
-						while ($row = mysql_fetch_row($result)) {
-							$drugbank_id1[] = $row[0];
-						}
-						$intersected_drugbankids = array_intersect($drugbank_id, $drugbank_id1);
-						if (sizeof($intersected_drugbankids) == 1)  {
-							// echo $drug_id . " - ". sizeof($drugbank_id). "  found\n";
-							$identified_drugs = $identified_drugs+1;
-							echo "identified: ".$identified_drugs."/".$drug_id."\n";
-							$drugbank_id_found = array_pop($intersected_drugbankids);
-							//echo "\t$drugName - ".$drugbank_id_found."\n"; 
-							$sql_drugbank_id_field = ", drugbank_id";
-							$sql_drugbank_id = ", '".$drugbank_id_found."'";
-						} else if (sizeof($intersected_drugbankids) > 1) {
-							echo "more ids found: ".$intersected_drugbankids."/".$drug_id."\n"; 
-						}
-
-					}
-				}
-				
-				
-				mysql_select_db ($database_dailymed);
-
-				$sql_query = "INSERT INTO ".$database_table_drugs." (id, name, fullName".$sql_drugbank_id_field.")  VALUES (".$drug_id.", '".$drugName."', '".$fullDrugName."'".$sql_drugbank_id.")";
-				if (!mysql_query ($sql_query)) {
-					die(mysql_error() . " - query: ".$sql_query);
-				}		
-*/
-
+		
 		foreach ($seperate_tables as $seperate_table => $seperate_table_array) {
 			if (!is_array($seperate_table_array)) {
 				$seperate_table = $seperate_table_array;
 			}
-			
 			$fields = array();
 			
 // INACTIVEINGREDIENT
+
 			if ($seperate_table == "inactiveIngredient") {
 				$searchpath = array_searchRecursive("INACTIVEINGREDIENT", $xmlDrugFile->data[0]);
 				if ($searchpath !== false) {
@@ -267,26 +196,36 @@ foreach ($files as $file) {
 					for ($i = 0; $i < (sizeof($searchpath)-2); $i = $i+1) {
 						$subarray = $subarray[$searchpath[$i]];
 					}
-					$i = $searchpath[$i]+1;
+					$i = $searchpath[$i];
 					for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
 						if ($subarray[$k]["name"] != "INACTIVEINGREDIENT") {
 							continue;
 						}
-						$subsubarray = $subarray[$k]["child"][0];
-						if ($subsubarray["child"][0]["name"] == "NAME") {
-							$inactiveIngridient = $subsubarray["child"][0]["content"];
-							$fields[] = $inactiveIngridient;
-						} else {
-							$errors[$file] .= " INACTIVEINGRIDIENT";
+						//$subsubarray = $subarray[$k]["child"][0];
+						$subsubarray = $subarray[$k]["child"];
+						for ($l = 0; $l < sizeof($subsubarray); $l = $l+1) {
+							if ($subsubarray[$l]["name"] != "NAME") {
+								if ($subsubarray[$l]["name"] == "INACTIVEINGREDIENTSUBSTANCE") {
+									for ($m = 0; $m < sizeof($subsubarray[$l]["child"]); $m = $m + 1) {
+										if ($subsubarray[$l]["child"][$m]["name"] != "NAME") {
+											continue;
+										}
+										$fields[] = $subsubarray[$l]["child"][$m]["content"];
+										
+										$found_inactive_ingredients += 1;
+//										echo $found_inactive_ingredients. "\n";
+									}
+								}
+								continue;
+							}
+							$fields[] = $subsubarray[$l]["content"];
+							$found_inactive_ingredients += 1;
+//							echo $found_inactive_ingredients. "\n";
 						}
 					}
-/*				
-					if ($parent_subtree["child"][0]["child"][1]["name"] == "NAME") {
-						$inactiveIngridient = str_replace("'", "\'", $parent_subtree["child"][0]["child"][1]["content"]);
-						$fields[] = $inactiveIngridient;
+					if (sizeof($fields) == 0) {
+						$errors[$file] .= " INACTIVEINGRIDIENT";
 					}
-*/
-					
 				}
 // SIDE EFFECTS
 			} else if ($seperate_table == "side_effects") {
@@ -405,6 +344,29 @@ foreach ($files as $file) {
 						}
 					}
 				}
+// INDICATIONS
+			} else if ($seperate_table == "indications") {
+				$searchpath = array_searchRecursive("INDICATIONS AND USAGE", $xmlDrugFile->data[0]);
+				if ($searchpath !== false ) {
+					$subarray = $xmlDrugFile->data[0];
+					for ($i = 0; $i < (sizeof($searchpath)-2); $i = $i+1) {
+						$subarray = $subarray[$searchpath[$i]];
+					}
+					$i = $searchpath[$i]+1;
+					for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
+						if ($subarray[$k]["name"] != "TEXT") {
+							continue;
+						}
+						$subsubarray = $subarray[$k]["child"][0];
+						if ($subsubarray["name"] == "PARAGRAPH") {
+							$contraindication = $subsubarray["content"];
+							$fields[] = $contraindication;
+						} else {
+							$errors[$file] .= " INDICATIONS";
+						}
+
+					}
+				}
 // CONTRAINDICATIONS
 			} else if ($seperate_table == "contraindications") {
 				$searchpath = array_searchRecursive("CONTRAINDICATIONS", $xmlDrugFile->data[0]);
@@ -452,7 +414,7 @@ foreach ($files as $file) {
 										$fields[sizeof($fields)-1] .= " $overdosage";
 									}
 								} else {
-									$errors[$file] .= " OVERDOSAGE";
+									$errors[$file] .= " DOSAGE";
 								}
 							}
 						} else if ($subarray[$k]["name"] == "COMPONENT") {
@@ -462,15 +424,49 @@ foreach ($files as $file) {
 									for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
 										$temp = $subsubarray[$j]["child"][$l];
 										if ($temp["name"] == "TITLE") {
-											$overdosage = "<br/>".$temp["content"].":";
+											$overdosage = $temp["content"].":";
 											if (sizeof($fields) > 0) {
-												$fields[sizeof($fields)-1] .= " $overdosage";
+												$fields[sizeof($fields)-1] .= "<br/> $overdosage";
+											} else {
+												$fields[] = "$overdosage";
 											}
 										} else if ($temp["name"] == "TEXT") {
-											if ($temp["child"][0]["name"] == "PARAGRAPH") {
-												$overdosage = $temp["child"][0]["content"];
-												if (sizeof($fields) > 0) {
-													$fields[sizeof($fields)-1] .= " $overdosage";
+											for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
+												if ($temp["child"][$m]["name"] == "PARAGRAPH") {
+													$overdosage = $temp["child"][$m]["content"];
+													if (sizeof($fields) > 0) {
+														$fields[sizeof($fields)-1] .= " $overdosage";
+													} else {
+														$fields[] = "$overdosage";
+													}
+												}
+											}
+										}  else if ($temp["name"] == "COMPONENT") {
+											for ($n = 0; $n < sizeof($temp["child"]); $n = $n + 1) {
+												$temp1 = $temp["child"][$n];
+												if ($temp1["name"] == "SECTION") {
+													for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
+														$temp2 = $temp1["child"][$o];
+														if ($temp2["name"] == "TITLE") {
+															$overdosage = $temp2["content"].":";
+															if (sizeof($fields) > 0) {
+																$fields[sizeof($fields)-1] .= "<br/>"."$overdosage";
+															}
+														} else if ($temp2["name"] == "TEXT") {
+															for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
+																if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
+																	$overdosage = $temp2["child"][$m]["content"];
+																	if (sizeof($fields) > 0) {
+																		$fields[sizeof($fields)-1] .= " $overdosage";
+																	} else {
+																		$fields[] = "$overdosage";
+																	}
+																}
+															}
+														}
+													}
+												} else {
+													$errors[$file] .= " DOSAGE";
 												}
 											}
 										}
@@ -479,7 +475,7 @@ foreach ($files as $file) {
 									$errors[$file] .= " DOSAGE";
 								}
 							}
-						}						
+						}				
 /*
 						$subsubarray = $subarray[$k]["child"];
 						if (($subsubarray["child"][2]["name"] == "TITLE") && ($subsubarray["name"] == "SECTION")) {
@@ -576,9 +572,11 @@ foreach ($files as $file) {
 						}
 					}
 					$sql_query = "INSERT INTO ".$seperate_table." (drug, ".$sql1.")  VALUES (".$drug_id.", ".$sql2.")";
+					if ($seperate_table == "indications") {
 					if (!mysql_query ($sql_query)) {
 						die(mysql_error() . " - query: ".$sql_query);
 					}		
+					}
 				}
 			}
 		}
