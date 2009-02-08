@@ -1,0 +1,147 @@
+@prefix map: <file:/C:/apps/dailymed/dailymed.n3#> .
+@prefix db: <> .
+@prefix dailymed: <dailymed/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+map:Server a d2r:Server;
+    rdfs:label "D2R Server publishing the Dailymed Dataset";
+    d2r:baseURI <http://www4.wiwiss.fu-berlin.de/dailymed/>;
+    d2r:port 2031;
+    .
+
+map:database a d2rq:Database;
+    d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql://127.0.0.1/lodd_dailymed?autoReconnect=true";
+    d2rq:username "d2r";
+	d2rq:resultSizeLimit 500;
+    .
+	
+# Table drugs
+map:drugs a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drugs/@@drugs.id@@";
+	d2rq:class dailymed:drugs;
+	.
+map:drugs__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@drugs.fullName@@";
+	.
+map:name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:name;
+	d2rq:column "drugs.name";
+	.
+map:fullName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:fullName;
+	d2rq:column "drugs.fullName";
+	.
+
+map:activeIngredient a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:activeIngredient;
+	d2rq:column "drugs.activeIngridient";
+	.
+
+map:activeMoiety a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:activeMoiety;
+	d2rq:column "drugs.activeMoiety";
+	.
+	
+map:genericMedicine a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:genericMedicine;
+	d2rq:column "drugs.genericMedicine";
+	.
+
+map:routeOfAdministration a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:routeOfAdministration;
+	d2rq:uriPattern "routeOfAdministration/@@drugs.routeOfAdministration|urlify@@";
+	.
+	
+map:representedOrganization a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:representedOrganization;
+	d2rq:uriPattern "organization/@@drugs.representedOrganization|urlify@@";
+	.
+
+map:organization a d2rq:ClassMap;
+    d2rq:uriPattern "organization/@@drugs.representedOrganization|urlify@@";
+    d2rq:class dailymed:organization;
+    d2rq:dataStorage map:database.
+
+map:organization__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:organization;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@drugs.representedOrganization@@";
+	.
+map:producesDrug a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:organization;
+	d2rq:property dailymed:producesDrug;
+	d2rq:uriPattern "drugs/@@drugs.id@@";
+	.
+	
+map:genericDrug a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:genericDrug;
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugs/@@drugs.drugbank_id@@";
+	.
+
+map:overdosage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:overdosage;
+    d2rq:join "drugs.id = overdosage.drug";
+	d2rq:column "overdosage.field";
+.
+
+map:adverseReaction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:adverseReaction;
+    d2rq:join "drugs.id = adverse_reactions.drug";
+	d2rq:column "adverse_reactions.field";
+.
+
+map:sideEffect a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:sideEffect;
+    d2rq:join "drugs.id = side_effects.drug";
+	d2rq:column "side_effects.field";
+.
+
+map:contraindication a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:contraindication;
+    d2rq:join "drugs.id = contraindications.drug";
+	d2rq:column "contraindications.field";
+.
+
+map:inactiveIngredient a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:inactiveIngredient;
+    d2rq:join "drugs.id = inactiveingredient.drug";
+	d2rq:column "inactiveingredient.field";
+.
+
+map:dosage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:dosage;
+    d2rq:join "drugs.id = dosage.drug";
+	d2rq:column "dosage.field";
+.
+
+map:indication a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:indication;
+    d2rq:join "drugs.id = indications.drug";
+	d2rq:column "indications.field";
+.
+
