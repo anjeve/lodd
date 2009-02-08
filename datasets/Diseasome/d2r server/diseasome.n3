@@ -1,0 +1,139 @@
+@prefix map: <file:/C:/apps/diseasome/diseasome.n3#> .
+@prefix db: <> .
+@prefix diseasome: <diseasome/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+map:Server a d2r:Server;
+    rdfs:label "D2R Server publishing the Diseasome Dataset";
+    d2r:baseURI <http://www4.wiwiss.fu-berlin.de/diseasome/>;
+    d2r:port 2027;
+    .
+
+map:database a d2rq:Database;
+    d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql://127.0.0.1/lodd_diseasome?autoReconnect=true";
+    d2rq:username "d2r";
+	d2rq:resultSizeLimit 500;
+    .
+	
+map:genes a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "genes/@@disease_genes.gene@@";
+	d2rq:class diseasome:genes;
+	.
+
+map:genes__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genes;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@disease_genes.gene@@";
+.
+
+map:bio2rdfSymbol a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genes;
+	d2rq:property diseasome:bio2rdfSymbol;
+	d2rq:uriPattern "http://symbol.bio2rdf.org/symbol:@@disease_genes.gene@@";
+.
+map:hgncId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genes;
+	d2rq:property diseasome:hgncId;
+	d2rq:uriPattern "http://bio2rdf.org/hgnc:@@disease_genes.hgnc@@";
+	.
+map:hgncIdPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genes;
+	d2rq:property diseasome:hgncIdPage;
+	d2rq:uriPattern "http://www.genenames.org/data/hgnc_data.php?hgnc_id=@@disease_genes.hgnc@@";
+.
+map:geneId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genes;
+	d2rq:property diseasome:geneId;
+	d2rq:uriPattern "http://bio2rdf.org/geneid:@@disease_genes.geneid@@";
+	.
+
+# Table diseases
+map:diseases a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "diseases/@@diseases.id@@";
+	d2rq:class diseasome:diseases;
+	.
+map:diseases__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@diseases.name@@";
+	.
+map:name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:name;
+	d2rq:column "diseases.name";
+	.
+map:omim a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:omim;
+	d2rq:uriPattern "http://bio2rdf.org/omim:@@diseases.omim@@";
+	.
+map:omimPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:omimPage;
+	d2rq:uriPattern "http://www.ncbi.nlm.nih.gov/entrez/dispomim.cgi?id=@@diseases.omim@@";
+	.
+map:chromosomalLocation a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:chromosomalLocation;
+	d2rq:uriPattern "chromosomalLocation/@@diseases.chromosomalLocation@@";
+	.
+map:class a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:class;
+	d2rq:uriPattern "diseaseClass/@@diseases.class@@";
+	.
+map:size a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:size;
+	d2rq:column "diseases.size";
+	d2rq:datatype xsd:int;
+	.
+map:degree a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:degree;
+	d2rq:column "diseases.degree";
+	d2rq:datatype xsd:int;
+	.
+map:classDegree a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:classDegree;
+	d2rq:column "diseases.classDegree";
+	d2rq:datatype xsd:int;
+	.
+map:diseaseSubtypeOf a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+    d2rq:property diseasome:diseaseSubtypeOf;
+    d2rq:join "diseases.diseaseSubtypeOf = parent_diseases.disease_id";
+	d2rq:alias "diseases AS parent_diseases";
+	d2rq:uriPattern "diseases/@@parent_diseases.id@@";
+.
+
+map:associatedGene a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+    d2rq:property diseasome:associatedGene;
+    d2rq:join "disease_genes.disease = diseases.id";
+	d2rq:uriPattern "genes/@@disease_genes.gene@@";
+.
+
+map:possibleGenericDrug a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:possibleGenericDrug;
+    d2rq:join "diseases.id = drug_targets.disease";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugs/@@drug_targets.drug@@";
+	.
+
+map:trialCondition a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property owl:sameAs;
+    d2rq:join "linkedct.id = diseases.id";
+	d2rq:uriPattern "http://data.linkedct.org/resource/condition/@@linkedct.linkedct_id@@";
+.
