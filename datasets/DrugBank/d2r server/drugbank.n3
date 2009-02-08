@@ -1,0 +1,779 @@
+@prefix map: <file:/C:/apps/drugbank/drugbank.n3#> .
+@prefix db: <> .
+@prefix drugbank: <drugbank/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+map:Server a d2r:Server;
+    rdfs:label "D2R Server publishing the DrugBank Database";
+    d2r:baseURI <http://www4.wiwiss.fu-berlin.de/drugbank/>;
+    d2r:port 2024;
+    .
+
+map:database a d2rq:Database;
+    d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql://127.0.0.1/drugbank?autoReconnect=true";
+    d2rq:username "d2r";
+	d2rq:resultSizeLimit 500;
+    .
+	
+map:target a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:target;
+	d2rq:uriPattern "targets/@@targets.id@@";
+    d2rq:join "drugs.id = drug_targets.drug";
+    d2rq:join "targets.id = drug_targets.target";
+.
+map:enzyme a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:enzyme;
+	d2rq:uriPattern "enzymes/@@enzymes.id@@";
+    d2rq:join "drugs.id = drug_enzymes.drug";
+    d2rq:join "enzymes.id = drug_enzymes.enzyme";
+.
+	
+map:ahfsCode a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:ahfsCode;
+    d2rq:join "drugs.id = ahfscodes.drug";
+	d2rq:column "ahfscodes.field";
+.
+
+map:atcCode a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:atcCode;
+    d2rq:join "drugs.id = atccodes.drug";
+	d2rq:column "atccodes.field";
+.
+
+map:brandMixture a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:brandMixture;
+    d2rq:join "drugs.id = brandmixtures.drug";
+	d2rq:column "brandmixtures.field";
+.
+
+map:brandName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:brandName;
+    d2rq:join "drugs.id = brandnames.drug";
+	d2rq:column "brandnames.field";
+.
+
+map:dosageForm a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:dosageForm;
+	d2rq:uriPattern "dosageforms/@@dosageforms.field@@";
+    d2rq:join "drugs.id = dosageforms.drug";
+.
+
+# Table drug_interactions
+map:drug_interactions a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	# Sorry, I don't know which columns to put into the uriPattern
+	# because the table doesn't have a primary key
+	d2rq:uriPattern "drug_interactions/@@drug_interactions.drug1@@_@@drug_interactions.drug2@@";
+	d2rq:class drugbank:drug_interactions;
+	.
+
+map:drug_interactions__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_interactions;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@drug_interactions.drug1@@ @@drug_interactions.drug2@@";
+	.
+map:interactionDrug1 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_interactions;
+	d2rq:property drugbank:interactionDrug1;
+	d2rq:uriPattern "drugs/@@drug_interactions.drug1@@";
+	.
+map:interactionDrug2 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_interactions;
+	d2rq:property drugbank:interactionDrug2;
+	d2rq:uriPattern "drugs/@@drug_interactions.drug2@@";
+	.
+map:text a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drug_interactions;
+	d2rq:property drugbank:text;
+	d2rq:column "drug_interactions.text";
+	.
+
+map:drugCategory a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:drugCategory;
+	d2rq:uriPattern "drugcategory/@@drugcategory.field@@";
+    d2rq:join "drugs.id = drugcategory.drug";
+.
+
+map:drugType a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:drugType;
+	d2rq:uriPattern "drugtype/@@drugtype.field@@";
+    d2rq:join "drugs.id = drugtype.drug";
+.
+
+map:drugReference a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:drugReference;
+    d2rq:join "drugs.id = drugreference.drug";
+	d2rq:column "drugreference.field";
+.
+
+# Table drugs
+map:drugs a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drugs/@@drugs.id|urlify@@";
+	d2rq:class drugbank:drugs;
+	.
+map:_label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@drugs.genericName@@";
+	.
+map:drugbankLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property foaf:page;
+	d2rq:uriColumn "drugs.drugbankLink";
+	.
+map:absorption a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:absorption;
+	d2rq:column "drugs.absorption";
+	.
+map:biotransformation a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:biotransformation;
+	d2rq:column "drugs.biotransformation";
+	.
+map:casRegistryNumber a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:casRegistryNumber;
+	d2rq:uriPattern "http://bio2rdf.org/cas:@@drugs.casRegistryNumber@@";
+	.
+map:chebiId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:chebiId;
+	d2rq:uriPattern "http://bio2rdf.org/chebi:@@drugs.chebiId@@";
+	.
+map:chemicalFormula a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:chemicalFormula;
+	d2rq:column "drugs.chemicalFormula";
+	.
+map:chemicalIupacName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:chemicalIupacName;
+	d2rq:column "drugs.chemicalIupacName";
+	.
+map:chemicalStructure a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:chemicalStructure;
+	d2rq:column "drugs.chemicalStructure";
+	.
+map:creationDate a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:creationDate;
+	d2rq:column "drugs.creationDate";
+	.
+map:dpdDrugIdNumber a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:dpdDrugIdNumber;
+	d2rq:column "drugs.dpdDrugIdNumber";
+	.
+map:description a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:description;
+	d2rq:column "drugs.description";
+	.
+map:drugInteractions a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:drugInteractions;
+	d2rq:column "drugs.drugInteractions";
+	.
+map:experimentalCaco2Permeability a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:experimentalCaco2Permeability;
+	d2rq:column "drugs.experimentalCaco2Permeability";
+	.
+map:experimentalLogpHydrophobicity a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:experimentalLogpHydrophobicity;
+	d2rq:column "drugs.experimentalLogpHydrophobicity";
+	.
+map:experimentalLogs a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:experimentalLogs;
+	d2rq:column "drugs.experimentalLogs";
+	.
+map:experimentalWaterSolubility a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:experimentalWaterSolubility;
+	d2rq:column "drugs.experimentalWaterSolubility";
+	.
+map:fdaLabelFiles a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:fdaLabelFiles;
+	d2rq:column "drugs.fdaLabelFiles";
+	.
+map:genbankId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:genbankId;
+	d2rq:column "drugs.genbankId";
+	.
+map:genericName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:genericName;
+	d2rq:column "drugs.genericName";
+	.
+map:hetId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:hetId;
+	d2rq:column "drugs.hetId";
+	.
+map:halfLife a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:halfLife;
+	d2rq:column "drugs.halfLife";
+	.
+map:inchiIdentifier a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:inchiIdentifier;
+	d2rq:column "drugs.inchiIdentifier";
+	.
+map:inchiKey a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:inchiKey;
+	d2rq:column "drugs.inchiKey";
+	.
+map:indication a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:indication;
+	d2rq:column "drugs.indication";
+	.
+map:keggCompoundId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:keggCompoundId;
+	d2rq:uriPattern "http://bio2rdf.org/cpd:@@drugs.keggCompoundId@@";
+	.
+map:keggDrugId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:keggDrugId;
+	d2rq:uriPattern "http://bio2rdf.org/kegg:@@drugs.keggDrugId@@";
+	.
+map:limsDrugId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:limsDrugId;
+	d2rq:column "drugs.limsDrugId";
+	.
+map:msdsFiles a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:msdsFiles;
+	d2rq:column "drugs.msdsFiles";
+	.
+map:massSpecFile a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:massSpecFile;
+	d2rq:column "drugs.massSpecFile";
+	.
+map:mechanismOfAction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:mechanismOfAction;
+	d2rq:column "drugs.mechanismOfAction";
+	.
+map:meltingPoint a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:meltingPoint;
+	d2rq:column "drugs.meltingPoint";
+	.
+map:molecularWeightAverage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:molecularWeightAverage;
+	d2rq:column "drugs.molecularWeightAvg";
+	.
+map:molecularWeightMono a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:molecularWeightMono;
+	d2rq:column "drugs.molecularWeightMono";
+	.
+map:pdbExperimentalId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:pdbExperimentalId;
+	d2rq:column "drugs.pdbExperimentalId";
+	.
+map:pdbHomologyId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:pdbHomologyId;
+	d2rq:column "drugs.pdbHomologyId";
+	.
+map:pdrhealthLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:pdrhealthLink;
+	d2rq:column "drugs.pdrhealthLink";
+	.
+map:pharmgkbId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:pharmgkbId;
+	d2rq:column "drugs.pharmgkbId";
+	.
+map:pharmacology a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:pharmacology;
+	d2rq:column "drugs.pharmacology";
+	.
+map:predictedLogpHydrophobicity a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:predictedLogpHydrophobicity;
+	d2rq:column "drugs.predictedLogpHydrophobicity";
+	.
+map:predictedLogs a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:predictedLogs;
+	d2rq:column "drugs.predictedLogs";
+	.
+map:predictedWaterSolubility a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:predictedWaterSolubility;
+	d2rq:column "drugs.predictedWaterSolubility";
+	.
+map:primaryAccessionNo a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:primaryAccessionNo;
+	d2rq:column "drugs.primaryAccessionNo";
+	.
+map:proteinBinding a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:proteinBinding;
+	d2rq:column "drugs.proteinBinding";
+	.
+map:pubchemCompoundId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:pubchemCompoundId;
+	d2rq:column "drugs.pubchemCompoundId";
+	.
+map:pubchemSubstanceId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:pubchemSubstanceId;
+	d2rq:column "drugs.pubchemSubstanceId";
+	.
+map:rxlistLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:rxlistLink;
+	d2rq:uriColumn "drugs.rxlistLink";
+	.
+map:smilesStringCanonical a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:smilesStringCanonical;
+	d2rq:column "drugs.smilesStringCanonical";
+	.
+map:smilesStringIsomeric a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:smilesStringIsomeric;
+	d2rq:column "drugs.smilesStringIsomeric";
+	.
+map:state a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:state;
+	d2rq:column "drugs.state";
+	.
+map:structure a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:structure;
+	d2rq:column "drugs.structure";
+	.
+map:swissprotId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:swissprotId;
+	d2rq:uriPattern "http://bio2rdf.org/uniprot:@@drugs.swissprotId@@";
+	.
+map:swissprotPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:swissprotPage;
+	d2rq:uriPattern "http://www.uniprot.org/uniprot/@@drugs.swissprotId@@";
+	.
+map:swissprotName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:swissprotName;
+	d2rq:column "drugs.swissprotName";
+	.
+map:synthesisReference a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:synthesisReference;
+	d2rq:column "drugs.synthesisReference";
+	.
+map:toxicity a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:toxicity;
+	d2rq:column "drugs.toxicity";
+	.
+map:updateDate a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:updateDate;
+	d2rq:column "drugs.updateDate";
+	.
+map:wikipediaLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property foaf:page;
+	d2rq:uriColumn "drugs.wikipediaLink";
+	.
+map:DBpediaPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property foaf:page;
+	d2rq:uriPattern "http://dbpedia.org/page/@@drugs.dbpediaResource@@";
+	.
+map:DBpediaLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+	d2rq:uriPattern "http://dbpedia.org/resource/@@drugs.dbpediaResource@@";
+	.
+map:contraindicationInsert a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:contraindicationInsert;
+	d2rq:uriColumn "drugs.contraindicationInsert";
+	.
+map:interactionInsert a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:interactionInsert;
+	d2rq:uriColumn "drugs.interactionInsert";
+	.
+map:pkaIsoelectricPoint a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:pkaIsoelectricPoint;
+	d2rq:column "drugs.pkaIsoelectricPoint";
+	.
+map:patientInformationInsert a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:patientInformationInsert;
+	d2rq:column "drugs.patientInformationInsert";
+	.
+
+map:cellularLocation a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:cellularLocation;
+    d2rq:join "targets.id = drugtargetcellularlocation.target";
+	d2rq:column "drugtargetcellularlocation.field";
+.
+
+map:reference a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:reference;
+    d2rq:join "targets.id = drugtargetcellularlocation.target";
+	d2rq:column "drugtargetdrugreferences.field";
+.
+
+map:generalReference a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:generalReference;
+    d2rq:join "targets.id = drugtargetgeneralreferences.target";
+	d2rq:column "drugtargetgeneralreferences.field";
+.
+
+map:goClassificationComponent a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:goClassificationComponent;
+    d2rq:join "targets.id = drugtargetgoclassificationcomponent.target";
+	d2rq:column "drugtargetgoclassificationcomponent.field";
+.
+
+map:goClassificationFunction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:goClassificationFunction;
+    d2rq:join "targets.id = drugtargetgoclassificationfunction.target";
+	d2rq:column "drugtargetgoclassificationfunction.field";
+.
+
+map:goClassificationProcess a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:goClassificationProcess;
+    d2rq:join "targets.id = drugtargetgoclassificationprocess.target";
+	d2rq:column "drugtargetgoclassificationprocess.field";
+.
+
+map:pfamDomainFunction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:pfamDomainFunction;
+    d2rq:join "targets.id = drugtargetpfamdomainfunction.target";
+	d2rq:uriPattern "http://bio2rdf.org/pfam:@@drugtargetpfamdomainfunction.field@@";
+.
+map:pfamDomainFunctionPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:pfamDomainFunctionPage;
+    d2rq:join "targets.id = drugtargetpfamdomainfunction.target";
+	d2rq:uriPattern "http://pfam.sanger.ac.uk/family?acc=@@drugtargetpfamdomainfunction.field@@";
+.
+
+map:signal a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:signal;
+    d2rq:join "targets.id = drugtargetsignals.target";
+	d2rq:column "drugtargetsignals.field";
+.
+
+map:targetSynonym a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:targetSynonym;
+    d2rq:join "targets.id = drugtargetsynonyms.target";
+	d2rq:column "drugtargetsynonyms.field";
+.
+
+map:transmembraneRegions a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+    d2rq:property drugbank:transmembraneRegions;
+    d2rq:join "targets.id = drugtargettransmembraneregions.target";
+	d2rq:column "drugtargettransmembraneregions.field";
+.
+
+
+# Table enzymes
+map:enzymes a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "enzymes/@@enzymes.id@@";
+	d2rq:class drugbank:enzymes;
+	.
+map:enzymes__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:enzymes;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@enzymes.name@@";
+	.
+map:enzymeGeneName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:enzymes;
+	d2rq:property drugbank:enzymeGeneName;
+	d2rq:column "enzymes.geneName";
+	.
+map:enzymeName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:enzymes;
+	d2rq:property drugbank:enzymeName;
+	d2rq:column "enzymes.name";
+	.
+map:enzymeProteinSequence a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:enzymes;
+	d2rq:property drugbank:enzymeProteinSequence;
+	d2rq:column "enzymes.proteinSequence";
+	.
+map:enzymeSwissprotId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:enzymes;
+	d2rq:property drugbank:enzymeSwissprotId;
+	d2rq:uriPattern "http://bio2rdf.org/uniprot:@@enzymes.swissprotId@@";
+	.
+
+map:enzymeSwissprotPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:enzymes;
+	d2rq:property drugbank:enzymeSwissprotPage;
+	d2rq:uriPattern "http://www.uniprot.org/uniprot/@@enzymes.swissprotId@@";
+	.
+
+map:foodInteraction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:foodInteraction;
+    d2rq:join "drugs.id = foodinteractions.drug";
+	d2rq:column "foodinteractions.field";
+.
+
+map:affectedOrganism a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:affectedOrganism;
+    d2rq:join "drugs.id = organismsaffected.drug";
+	d2rq:column "organismsaffected.field";
+.
+
+map:secondaryAccessionNumber a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:secondaryAccessionNumber;
+    d2rq:join "drugs.id = secondaryaccessionno.drug";
+	d2rq:column "secondaryaccessionno.field";
+.
+
+map:synonym a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property drugbank:synonym;
+    d2rq:join "drugs.id = synonyms.drug";
+	d2rq:column "synonyms.field";
+.
+
+# Table targets
+map:targets a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "targets/@@targets.id@@";
+	d2rq:class drugbank:targets;
+	.
+map:targets__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@targets.name@@";
+	.
+
+	map:chromosomeLocation a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:chromosomeLocation;
+	d2rq:column "targets.chromosomeLocation";
+	.
+map:essentiality a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:essentiality;
+	d2rq:column "targets.essentiality";
+	.
+map:genatlasId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:genatlasId;
+	d2rq:column "targets.genatlasId";
+	.
+map:genbankIdGene a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:genbankIdGene;
+	d2rq:column "targets.genbankIdGene";
+	.
+map:genbankIdGenePage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:genbankIdGenePage;
+	d2rq:uriPattern "http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?val=@@targets.genbankIdGene@@";
+	.
+map:genbankIdProtein a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:genbankIdProtein;
+	d2rq:column "targets.genbankIdProtein";
+	.
+map:genbankIdProteinPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:genbankIdProteinPage;
+	d2rq:uriPattern "http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?val=@@targets.genbankIdProtein@@";
+	.
+	
+	
+map:genecardId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:genecardId;
+	d2rq:column "targets.genecardId";
+	.
+
+map:bio2rdfSymbol a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:bio2rdfSymbol;
+	d2rq:uriPattern "http://symbol.bio2rdf.org/symbol:@@targets.genecardId@@";
+.
+	
+	
+map:geneName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:geneName;
+	d2rq:column "targets.geneName";
+	.
+map:geneSequence a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:geneSequence;
+	d2rq:column "targets.geneSequence";
+	.
+map:generalFunction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:generalFunction;
+	d2rq:column "targets.generalFunction";
+	.
+map:hgncId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:hgncId;
+	d2rq:uriPattern "http://bio2rdf.org/hgnc:@@targets.hgncId@@";
+	.
+map:hgncIdPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:hgncIdPage;
+	d2rq:uriPattern "http://www.genenames.org/data/hgnc_data.php?hgnc_id=@@targets.hgncId@@";
+	.
+map:hprdId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:hprdId;
+	d2rq:column "targets.hprdId";
+	.
+map:locus a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:locus;
+	d2rq:column "targets.locus";
+	.
+map:molecularWeight a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:molecularWeight;
+	d2rq:column "targets.molecularWeight";
+	.
+map:targetName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:targetName;
+	d2rq:column "targets.name";
+	.
+map:numberOfResidues a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:numberOfResidues;
+	d2rq:column "targets.numberOfResidues";
+	.
+map:pdbId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:pdbId;
+	d2rq:uriPattern "http://bio2rdf.org/pdb:@@targets.pdbId@@";
+	.
+map:pdbIdPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:pdbIdPage;
+	d2rq:uriPattern "http://www.pdb.org/pdb/explore/explore.do?structureId=@@targets.pdbId@@";
+	.	
+map:pathway a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:pathway;
+	d2rq:column "targets.pathway";
+	.
+map:proteinSequence a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:proteinSequence;
+	d2rq:column "targets.proteinSequence";
+	.
+map:reaction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:reaction;
+	d2rq:column "targets.reaction";
+	.
+map:specificFunction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:specificFunction;
+	d2rq:column "targets.specificFunction";
+	.
+map:targetSwissprotId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:targetSwissprotId;
+	d2rq:uriPattern "http://bio2rdf.org/uniprot:@@targets.swissprotId@@";
+	.
+map:targetSwissprotPage a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:targetSwissprotPage;
+	d2rq:uriPattern "http://www.uniprot.org/uniprot/@@targets.swissprotId@@";
+	.
+	
+map:targetSwissprotName a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:targetSwissprotName;
+	d2rq:column "targets.swissprotName";
+	.
+map:theoreticalPi a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property drugbank:theoreticalPi;
+	d2rq:column "targets.theoreticalPi";
+	.
+
+map:possibleDiseaseTarget a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:possibleDiseaseTarget;
+    d2rq:join "drugs.id = drug_disease.drug";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/@@drug_disease.disease@@";
+	.
+
+map:brandedDrug a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property drugbank:brandedDrug;
+    d2rq:join "drugs.id = drug_drug.drugbank_drug";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/dailymed/resource/drugs/@@drug_drug.dailymed_drug@@";
+	.
+
+map:trialIntervention a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "linkedct.id = drugs.id";
+	d2rq:uriPattern "http://data.linkedct.org/resource/intervention/@@linkedct.linkedct_id@@";
+.
