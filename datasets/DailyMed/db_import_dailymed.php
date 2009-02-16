@@ -79,7 +79,7 @@ foreach ($files as $file) {
 	unset($xmlDrugFile);
 	$drug_id = $drug_id+1;
 //	if ($file == "F0FF4F27-5185-4881-A749-C6B7A0CA5696.xml") {
-	if (($drug_id >= 0)) {
+	if (($drug_id == 11) || ($drug_id == 6)) {
 //		echo $file;
 		//$xmlDrugFile = new XMLParser("dailymed/F0FF4F27-5185-4881-A749-C6B7A0CA5696.xml");
 		$xmlDrugFile = new XMLParser($path."/".$file);
@@ -424,20 +424,24 @@ foreach ($files as $file) {
 									for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
 										$temp = $subsubarray[$j]["child"][$l];
 										if ($temp["name"] == "TITLE") {
-											$overdosage = $temp["content"].":";
-											if (sizeof($fields) > 0) {
-												$fields[sizeof($fields)-1] .= "<br/> $overdosage";
-											} else {
-												$fields[] = "$overdosage";
+											if ($temp["content"]) {
+												$overdosage = $temp["content"].":";
+												if (sizeof($fields) > 0) {
+													$fields[sizeof($fields)-1] .= " <br/>$overdosage";
+												} else {
+													$fields[] = "$overdosage";
+												}
 											}
 										} else if ($temp["name"] == "TEXT") {
 											for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
 												if ($temp["child"][$m]["name"] == "PARAGRAPH") {
-													$overdosage = $temp["child"][$m]["content"];
-													if (sizeof($fields) > 0) {
-														$fields[sizeof($fields)-1] .= " $overdosage";
-													} else {
-														$fields[] = "$overdosage";
+													if ($temp["child"][$m]["content"]) {
+														$overdosage = $temp["child"][$m]["content"];
+														if (sizeof($fields) > 0) {
+															$fields[sizeof($fields)-1] .= " $overdosage";
+														} else {
+															$fields[] = "$overdosage";
+														}
 													}
 												}
 											}
@@ -448,18 +452,22 @@ foreach ($files as $file) {
 													for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
 														$temp2 = $temp1["child"][$o];
 														if ($temp2["name"] == "TITLE") {
-															$overdosage = $temp2["content"].":";
-															if (sizeof($fields) > 0) {
-																$fields[sizeof($fields)-1] .= "<br/>"."$overdosage";
+															if ($temp2["content"]) {
+																$overdosage = $temp2["content"].":";
+																if (sizeof($fields) > 0) {
+																	$fields[sizeof($fields)-1] .= "<br/>"."$overdosage";
+																}
 															}
 														} else if ($temp2["name"] == "TEXT") {
 															for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
 																if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
-																	$overdosage = $temp2["child"][$m]["content"];
-																	if (sizeof($fields) > 0) {
-																		$fields[sizeof($fields)-1] .= " $overdosage";
-																	} else {
-																		$fields[] = "$overdosage";
+																	if ($temp2["child"][$m]["content"]) {
+																		$overdosage = $temp2["child"][$m]["content"];
+																		if (sizeof($fields) > 0) {
+																			$fields[sizeof($fields)-1] .= " $overdosage";
+																		} else {
+																			$fields[] = "$overdosage";
+																		}
 																	}
 																}
 															}
@@ -572,11 +580,9 @@ foreach ($files as $file) {
 						}
 					}
 					$sql_query = "INSERT INTO ".$seperate_table." (drug, ".$sql1.")  VALUES (".$drug_id.", ".$sql2.")";
-					if ($seperate_table == "indications") {
 					if (!mysql_query ($sql_query)) {
 						die(mysql_error() . " - query: ".$sql_query);
 					}		
-					}
 				}
 			}
 		}
