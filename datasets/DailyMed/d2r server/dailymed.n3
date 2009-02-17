@@ -128,20 +128,82 @@ map:inactiveIngredient a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
     d2rq:property dailymed:inactiveIngredient;
     d2rq:join "drugs.id = inactiveingredient.drug";
-	d2rq:column "inactiveingredient.field";
+	d2rq:uriPattern "inactiveIngredient/@@inactiveingredient.field|urlify@@";
 .
 
 map:dosage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
     d2rq:property dailymed:dosage;
-    d2rq:join "drugs.id = dosage.drug";
-	d2rq:column "dosage.field";
+    d2rq:join "drugs.id = dosage_and_administration.drug";
+	d2rq:column "dosage_and_administration.field";
 .
 
 map:indication a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
     d2rq:property dailymed:indication;
-    d2rq:join "drugs.id = indications.drug";
-	d2rq:column "indications.field";
+    d2rq:join "drugs.id = indications_and_usage.drug";
+	d2rq:column "indications_and_usage.field";
 .
 
+map:precaution a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:precaution;
+    d2rq:join "drugs.id = precautions.drug";
+	d2rq:column "precautions.field";
+.
+
+map:warning a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:warning;
+    d2rq:join "drugs.id = warnings.drug";
+	d2rq:column "warnings.field";
+.
+
+map:boxedWarning a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:boxedWarning;
+    d2rq:join "drugs.id = boxed_warning.drug";
+	d2rq:column "boxed_warning.field";
+.
+
+map:boxedWarning a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:boxedWarning;
+    d2rq:join "drugs.id = boxed_warning.drug";
+	d2rq:column "boxed_warning.field";
+.
+
+map:description a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:description;
+    d2rq:join "drugs.id = description.drug";
+	d2rq:column "description.field";
+.
+
+map:clinicalPharmacology a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:clinicalPharmacology;
+    d2rq:join "drugs.id = clinical_pharmacology.drug";
+	d2rq:column "clinical_pharmacology.field";
+.
+
+map:supply a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:supply;
+    d2rq:join "drugs.id = how_supplied.drug";
+	d2rq:column "how_supplied.field";
+.
+
+map:supplementalPatientMaterial a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+    d2rq:property dailymed:supplementalPatientMaterial;
+    d2rq:join "drugs.id = supplemental_patient_material.drug";
+	d2rq:column "supplemental_patient_material.field";
+.
+
+map:possibleDiseaseTarget a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property dailymed:possibleDiseaseTarget;
+    d2rq:join "drugs.id = drug_disease.dailymed_drug";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/@@drug_disease.diseasome_disease@@";
+	.
