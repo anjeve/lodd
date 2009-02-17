@@ -6,7 +6,14 @@
 * @author	Anja Jentzsch <mail@anjajentzsch.de>
 */
 
-function getFields($searchString) {
+if(is_numeric($argv[1])) {
+	$start = (int) $argv[1];
+}
+if(is_numeric($argv[2])) {
+	$end = (int) $argv[2];
+}
+
+function getFields($searchString, $level = false) {
 	global $fields;
 	global $xmlDrugFile;
 	global $errors;
@@ -15,12 +22,19 @@ function getFields($searchString) {
 	$searchpath = array_searchRecursive($searchString, $xmlDrugFile->data[0]);
 	if ($searchpath !== false ) {
 		$subarray = $xmlDrugFile->data[0];
-		for ($i = 0; $i < (sizeof($searchpath)-2); $i = $i+1) {
+		if ($level == "-1") {
+			$searchDepth = sizeof($searchpath)-3;
+		} else {
+			$searchDepth = sizeof($searchpath)-2;
+		}
+		for ($i = 0; $i < $searchDepth; $i = $i+1) {
 			$subarray = $subarray[$searchpath[$i]];
 		}
 		$i = $searchpath[$i]+1;
 		for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
-			if ($subarray[$k]["name"] == "TEXT") {
+			if ($subarray[$k]["name"] == "TITLE") {
+				getXmlContent($subarray[$k]["content"], ":");
+			} else if ($subarray[$k]["name"] == "TEXT") {
 				$subsubarray = $subarray[$k]["child"];
 				for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
 					if ($subsubarray[$j]["name"] == "PARAGRAPH") {
@@ -98,7 +112,7 @@ require_once("../scripts/lodd_utils.php");
 
 $database_table_drugs = "drugs";
 $seperate_tables = array(
-	"side_effects", "contraindications", "adverse_reactions", "overdosage", "inactiveIngredient", "dosage_and_administration", "indications_and_usage", "warnings", "precautions", "how_supplied", "description", "clinical_pharmacology", "supplemental_patient_material");
+	"side_effects", "contraindications", "adverse_reactions", "overdosage", "inactiveIngredient", "dosage_and_administration", "indications_and_usage", "warnings", "precautions", "how_supplied", "description", "clinical_pharmacology", "supplemental_patient_material", "boxed_warning");
 
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
 mysql_select_db ($database_dailymed);
@@ -117,7 +131,9 @@ if ($dir=opendir($path)) {
 	closedir($dir);
 }
 
-mysql_query ("drop table ".$database_table_drugs.";");
+if (start == 0) {
+	mysql_query ("drop table ".$database_table_drugs.";");
+}
 
 $sql_query = "CREATE TABLE IF NOT EXISTS ".$database_table_drugs." ( 
 	id int(10) NOT NULL,
@@ -139,7 +155,9 @@ foreach ($seperate_tables as $name => $seperate_db) {
 	if (!is_array($seperate_db)) {
 		$name = $seperate_db;
 	}
-	mysql_query ("drop table ".$name.";");
+	if (start == 0) {
+		mysql_query ("drop table ".$name.";");
+	}
 	$sql_query = "CREATE TABLE IF NOT EXISTS ".$name." (
 		drug int(10) NOT NULL,";
 	if (!is_array($seperate_db)) {
@@ -168,11 +186,9 @@ $found_text = array();
 foreach ($files as $file) {
 	unset($xmlDrugFile);
 	$drug_id = $drug_id+1;
-//	if ($file == "F0FF4F27-5185-4881-A749-C6B7A0CA5696.xml") {
 //	if (($drug_id == 11) || ($drug_id == 6)) {
-	if ($drug_id < 101) {
+	if (($drug_id >= $start) && ($drug_id < $end)) {
 //		echo $file;
-		//$xmlDrugFile = new XMLParser("dailymed/F0FF4F27-5185-4881-A749-C6B7A0CA5696.xml");
 		$xmlDrugFile = new XMLParser($path."/".$file);
 		
 		$sql1 = "";
@@ -359,6 +375,9 @@ foreach ($files as $file) {
 						}
 					}
 				}
+			} else if ($seperate_table =="boxed_warning") {
+				// BOXED WARNING SECTION
+				getFields("BOXED WARNING SECTION", "-1");
 			} else if (($seperate_table == "overdosage") ||
 				($seperate_table == "warnings") ||
 				($seperate_table == "precautions") ||
@@ -380,7 +399,7 @@ foreach ($files as $file) {
 					$field = str_replace("'", "\'", $field);
 					$sql_query = "INSERT INTO ".$seperate_table." (drug, field)  VALUES (".$drug_id.", '".$field."')";
 					if (!mysql_query ($sql_query)) {
-						die(mysql_error() . " - query: ".$sql_query);
+						echo (mysql_error() . " - query: ".$sql_query);
 					}
 					if (strlen($field) > 10) {
 						$found_text[$seperate_table]["count"] = $found_text[$seperate_table]["count"] + 1;
@@ -420,7 +439,7 @@ foreach ($files as $file) {
 					}
 					$sql_query = "INSERT INTO ".$seperate_table." (drug, ".$sql1.")  VALUES (".$drug_id.", ".$sql2.")";
 					if (!mysql_query ($sql_query)) {
-						die(mysql_error() . " - query: ".$sql_query);
+						echo (mysql_error() . " - query: ".$sql_query);
 					}		
 					if (strlen($sql2) > 10) {
 						$found_text[$seperate_table]["count"] = $found_text[$seperate_table]["count"] + 1;
