@@ -126,9 +126,16 @@ map:associatedGene a d2rq:PropertyBridge;
 
 map:possibleGenericDrug a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:diseases;
-	d2rq:property diseasome:possibleGenericDrug;
+	d2rq:property diseasome:possibleDrug;
     d2rq:join "diseases.id = drug_targets.disease";
 	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugs/@@drug_targets.drug@@";
+	.
+
+map:possibleBrandedDrug a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property diseasome:possibleDrug;
+    d2rq:join "diseases.id = disease_drug.diseasome_disease";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/dailymed/resource/drugs/@@disease_drug.dailymed_drug@@";
 	.
 
 map:trialCondition a d2rq:PropertyBridge;
