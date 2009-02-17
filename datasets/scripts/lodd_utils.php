@@ -7,6 +7,10 @@
  * @author	Anja Jentzsch <mail@anjajentzsch.de>
  */
 
+$database_dailymed = "lodd_dailymed";
+$database_drugbank = "lodd";
+$database_diseasome = "lodd_diseasome";
+
 require_once("../config/databaseconfig.php");
 
 $parent_subtree = array();
@@ -30,7 +34,7 @@ function array_searchRecursive( $needle, $haystack, $strict=false, $path=array()
         if( is_array($val) && $subPath = array_searchRecursive($needle, $val, $strict, $path) ) {
             $path = array_merge($path, array($key), $subPath);
             return $path;
-        } else if (((!$strict && $val == $needle) || ($strict && $val === $needle))) {
+        } else if (((!$strict && (strcasecmp($val, $needle) == 0)) || ($strict && $val === $needle))) {
             if ($haystack["name"] != "LINKHTML") {
 	        	$path[] = $key;
 				$parent_subtree = $haystack;
