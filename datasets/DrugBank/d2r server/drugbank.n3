@@ -514,7 +514,7 @@ map:signal a d2rq:PropertyBridge;
 
 map:targetSynonym a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
-    d2rq:property drugbank:targetSynonym;
+    d2rq:property drugbank:synonym;
     d2rq:join "targets.id = drugtargetsynonyms.target";
 	d2rq:column "drugtargetsynonyms.field";
 .
@@ -540,28 +540,28 @@ map:enzymes__label a d2rq:PropertyBridge;
 	.
 map:enzymeGeneName a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:enzymes;
-	d2rq:property drugbank:enzymeGeneName;
+	d2rq:property drugbank:geneName;
 	d2rq:column "enzymes.geneName";
 	.
 map:enzymeName a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:enzymes;
-	d2rq:property drugbank:enzymeName;
+	d2rq:property drugbank:name;
 	d2rq:column "enzymes.name";
 	.
 map:enzymeProteinSequence a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:enzymes;
-	d2rq:property drugbank:enzymeProteinSequence;
+	d2rq:property drugbank:proteinSequence;
 	d2rq:column "enzymes.proteinSequence";
 	.
 map:enzymeSwissprotId a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:enzymes;
-	d2rq:property drugbank:enzymeSwissprotId;
+	d2rq:property drugbank:swissprotId;
 	d2rq:uriPattern "http://bio2rdf.org/uniprot:@@enzymes.swissprotId@@";
 	.
 
 map:enzymeSwissprotPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:enzymes;
-	d2rq:property drugbank:enzymeSwissprotPage;
+	d2rq:property drugbank:swissprotPage;
 	d2rq:uriPattern "http://www.uniprot.org/uniprot/@@enzymes.swissprotId@@";
 	.
 
@@ -697,7 +697,7 @@ map:molecularWeight a d2rq:PropertyBridge;
 	.
 map:targetName a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
-	d2rq:property drugbank:targetName;
+	d2rq:property drugbank:name;
 	d2rq:column "targets.name";
 	.
 map:numberOfResidues a d2rq:PropertyBridge;
@@ -737,18 +737,18 @@ map:specificFunction a d2rq:PropertyBridge;
 	.
 map:targetSwissprotId a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
-	d2rq:property drugbank:targetSwissprotId;
+	d2rq:property drugbank:swissprotId;
 	d2rq:uriPattern "http://bio2rdf.org/uniprot:@@targets.swissprotId@@";
 	.
 map:targetSwissprotPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
-	d2rq:property drugbank:targetSwissprotPage;
+	d2rq:property drugbank:swissprotPage;
 	d2rq:uriPattern "http://www.uniprot.org/uniprot/@@targets.swissprotId@@";
 	.
 	
 map:targetSwissprotName a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
-	d2rq:property drugbank:targetSwissprotName;
+	d2rq:property drugbank:swissprotName;
 	d2rq:column "targets.swissprotName";
 	.
 map:theoreticalPi a d2rq:PropertyBridge;
