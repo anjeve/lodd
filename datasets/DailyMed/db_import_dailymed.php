@@ -6,11 +6,98 @@
 * @author	Anja Jentzsch <mail@anjajentzsch.de>
 */
 
+function getFields($searchString) {
+	global $fields;
+	global $xmlDrugFile;
+	global $errors;
+	
+	$searchpath = array_searchRecursive($searchString, $xmlDrugFile->data[0]);
+	if ($searchpath !== false ) {
+		$subarray = $xmlDrugFile->data[0];
+		for ($i = 0; $i < (sizeof($searchpath)-2); $i = $i+1) {
+			$subarray = $subarray[$searchpath[$i]];
+		}
+		$i = $searchpath[$i]+1;
+		for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
+			if ($subarray[$k]["name"] == "TEXT") {
+				$subsubarray = $subarray[$k]["child"];
+				for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+					if ($subsubarray[$j]["name"] == "PARAGRAPH") {
+						getXmlContent($subsubarray[$j]["content"]);
+					} else {
+						$errors[$file] .= " $searchString";
+					}
+				}
+			} else if ($subarray[$k]["name"] == "COMPONENT") {
+				$subsubarray = $subarray[$k]["child"];
+				for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+					if ($subsubarray[$j]["name"] == "SECTION") {
+						for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
+							$temp = $subsubarray[$j]["child"][$l];
+							if ($temp["name"] == "TITLE") {
+								getXmlContent($temp["content"], ":");
+							} else if ($temp["name"] == "TEXT") {
+								for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
+									if ($temp["child"][$m]["name"] == "PARAGRAPH") {
+										getXmlContent($temp["child"][$m]["content"]);
+									}
+								}
+							}  else if ($temp["name"] == "COMPONENT") {
+								for ($n = 0; $n < sizeof($temp["child"]); $n = $n + 1) {
+									$temp1 = $temp["child"][$n];
+									if ($temp1["name"] == "SECTION") {
+										for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
+											$temp2 = $temp1["child"][$o];
+											if ($temp2["name"] == "TITLE") {
+												getXmlContent($temp2["content"], ":");
+											} else if ($temp2["name"] == "TEXT") {
+												for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
+													if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
+														getXmlContent($temp2["child"][$m]["content"]);
+													}
+												}
+											}
+										}
+									} else {
+										$errors[$file] .= " $searchString";
+									}
+								}
+							}
+						}
+					} else {
+						$errors[$file] .= " $searchString";
+					}
+				}
+			}				
+		}
+	}
+}
+
+function getXmlContent($array, $divider = false) {
+	global $fields;
+
+	if ($array) {
+		$content = $array;
+		if ($divider) {
+			$content .= $divider;
+		}
+		if (sizeof($fields) > 0) {
+			if (!$divider) {
+				$fields[sizeof($fields)-1] .= " $content";
+			} else {
+				$fields[sizeof($fields)-1] .= "<br/>$content";
+			}
+		} else {
+			$fields[] = $content;
+		}
+	}
+}
+
 require_once("../scripts/lodd_utils.php");
 
 $database_table_drugs = "drugs";
 $seperate_tables = array(
-	"side_effects", "contraindications", "adverse_reactions", "overdosage", "inactiveIngredient", "dosage", "indications");
+	"side_effects", "contraindications", "adverse_reactions", "overdosage", "inactiveIngredient", "dosage", "indications", "warnings", "precautions", "supply", "description", "clinical_pharmalogy");
 
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
 mysql_select_db ($database_dailymed);
@@ -75,11 +162,14 @@ $identified_drugs_generic = 0;
 $found_inactive_ingredients = 0;
 $found_indications = 0;
 
+$found_text = array();
+
 foreach ($files as $file) {
 	unset($xmlDrugFile);
 	$drug_id = $drug_id+1;
 //	if ($file == "F0FF4F27-5185-4881-A749-C6B7A0CA5696.xml") {
-	if (($drug_id == 11) || ($drug_id == 6)) {
+//	if (($drug_id == 11) || ($drug_id == 6)) {
+	if ($drug_id < 101) {
 //		echo $file;
 		//$xmlDrugFile = new XMLParser("dailymed/F0FF4F27-5185-4881-A749-C6B7A0CA5696.xml");
 		$xmlDrugFile = new XMLParser($path."/".$file);
@@ -213,14 +303,12 @@ foreach ($files as $file) {
 										$fields[] = $subsubarray[$l]["child"][$m]["content"];
 										
 										$found_inactive_ingredients += 1;
-//										echo $found_inactive_ingredients. "\n";
 									}
 								}
 								continue;
 							}
 							$fields[] = $subsubarray[$l]["content"];
 							$found_inactive_ingredients += 1;
-//							echo $found_inactive_ingredients. "\n";
 						}
 					}
 					if (sizeof($fields) == 0) {
@@ -284,14 +372,9 @@ foreach ($files as $file) {
 							$subsubarray = $subarray[$k]["child"];
 							for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
 								if ($subsubarray[$j]["name"] == "PARAGRAPH") {
-									$overdosage = $subsubarray[$j]["content"];
-									if ($j == 0) {
-										$fields[] = $overdosage;
-									} else {
-										$fields[sizeof($fields)-1] .= " $overdosage";
-									}
+									getXmlContent($subsubarray[$j]["content"]);
 								} else {
-									$errors[$file] .= " OVERDOSAGE";
+									$errors[$file] .= " $seperate_table";
 								}
 							}
 						} else if ($subarray[$k]["name"] == "COMPONENT") {
@@ -301,24 +384,40 @@ foreach ($files as $file) {
 									for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
 										$temp = $subsubarray[$j]["child"][$l];
 										if ($temp["name"] == "TITLE") {
-											$overdosage = "<br/>".$temp["content"].":";
-											if (sizeof($fields) > 0) {
-												$fields[sizeof($fields)-1] .= " $overdosage";
-											}
+											getXmlContent($temp["content"], ":");
 										} else if ($temp["name"] == "TEXT") {
-											if ($temp["child"][0]["name"] == "PARAGRAPH") {
-												$overdosage = $temp["child"][0]["content"];
-												if (sizeof($fields) > 0) {
-													$fields[sizeof($fields)-1] .= " $overdosage";
+											for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
+												if ($temp["child"][$m]["name"] == "PARAGRAPH") {
+													getXmlContent($temp["child"][$m]["content"]);
+												}
+											}
+										}  else if ($temp["name"] == "COMPONENT") {
+											for ($n = 0; $n < sizeof($temp["child"]); $n = $n + 1) {
+												$temp1 = $temp["child"][$n];
+												if ($temp1["name"] == "SECTION") {
+													for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
+														$temp2 = $temp1["child"][$o];
+														if ($temp2["name"] == "TITLE") {
+															getXmlContent($temp2["content"], ":");
+														} else if ($temp2["name"] == "TEXT") {
+															for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
+																if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
+																	getXmlContent($temp2["child"][$m]["content"]);
+																}
+															}
+														}
+													}
+												} else {
+													$errors[$file] .= " $seperate_table";
 												}
 											}
 										}
 									}
 								} else {
-									$errors[$file] .= " OVERDOSAGE";
+									$errors[$file] .= " $seperate_table";
 								}
 							}
-						}
+						}				
 					}
 				}
 
@@ -332,18 +431,59 @@ foreach ($files as $file) {
 					}
 					$i = $searchpath[$i]+1;
 					for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
-						if ($subarray[$k]["name"] != "TEXT") {
-							continue;
-						}
-						$subsubarray = $subarray[$k]["child"][0];
-						if ($subsubarray["name"] == "PARAGRAPH") {
-							$contraindication = $subsubarray["content"];
-							$fields[] = $contraindication;
-						} else {
-							$errors[$file] .= " ADVERSE REACTIONS";
-						}
+						if ($subarray[$k]["name"] == "TEXT") {
+							$subsubarray = $subarray[$k]["child"];
+							for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+								if ($subsubarray[$j]["name"] == "PARAGRAPH") {
+									getXmlContent($subsubarray[$j]["content"]);
+								} else {
+									$errors[$file] .= " $seperate_table";
+								}
+							}
+						} else if ($subarray[$k]["name"] == "COMPONENT") {
+							$subsubarray = $subarray[$k]["child"];
+							for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+								if ($subsubarray[$j]["name"] == "SECTION") {
+									for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
+										$temp = $subsubarray[$j]["child"][$l];
+										if ($temp["name"] == "TITLE") {
+											getXmlContent($temp["content"], ":");
+										} else if ($temp["name"] == "TEXT") {
+											for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
+												if ($temp["child"][$m]["name"] == "PARAGRAPH") {
+													getXmlContent($temp["child"][$m]["content"]);
+												}
+											}
+										}  else if ($temp["name"] == "COMPONENT") {
+											for ($n = 0; $n < sizeof($temp["child"]); $n = $n + 1) {
+												$temp1 = $temp["child"][$n];
+												if ($temp1["name"] == "SECTION") {
+													for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
+														$temp2 = $temp1["child"][$o];
+														if ($temp2["name"] == "TITLE") {
+															getXmlContent($temp2["content"], ":");
+														} else if ($temp2["name"] == "TEXT") {
+															for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
+																if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
+																	getXmlContent($temp2["child"][$m]["content"]);
+																}
+															}
+														}
+													}
+												} else {
+													$errors[$file] .= " $seperate_table";
+												}
+											}
+										}
+									}
+								} else {
+									$errors[$file] .= " $seperate_table";
+								}
+							}
+						}				
 					}
 				}
+
 // INDICATIONS
 			} else if ($seperate_table == "indications") {
 				$searchpath = array_searchRecursive("INDICATIONS AND USAGE", $xmlDrugFile->data[0]);
@@ -354,67 +494,13 @@ foreach ($files as $file) {
 					}
 					$i = $searchpath[$i]+1;
 					for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
-						if ($subarray[$k]["name"] != "TEXT") {
-							continue;
-						}
-						$subsubarray = $subarray[$k]["child"][0];
-						if ($subsubarray["name"] == "PARAGRAPH") {
-							$contraindication = $subsubarray["content"];
-							$fields[] = $contraindication;
-						} else {
-							$errors[$file] .= " INDICATIONS";
-						}
-
-					}
-				}
-// CONTRAINDICATIONS
-			} else if ($seperate_table == "contraindications") {
-				$searchpath = array_searchRecursive("CONTRAINDICATIONS", $xmlDrugFile->data[0]);
-				if ($searchpath !== false ) {
-					$subarray = $xmlDrugFile->data[0];
-					for ($i = 0; $i < (sizeof($searchpath)-2); $i = $i+1) {
-						$subarray = $subarray[$searchpath[$i]];
-					}
-					$i = $searchpath[$i]+1;
-					for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
-						if ($subarray[$k]["name"] != "TEXT") {
-							continue;
-						}
-						$subsubarray = $subarray[$k]["child"][0];
-						if ($subsubarray["name"] == "PARAGRAPH") {
-							$contraindication = $subsubarray["content"];
-							$fields[] = $contraindication;
-						} else {
-							$errors[$file] .= " CONTRAINDICATIONS";
-						}
-
-					}
-				}
-// DOSAGE AND ADMINISTRATION	
-			} else if ($seperate_table == "dosage") {
-				$searchpath = array_searchRecursive("DOSAGE AND ADMINISTRATION", $xmlDrugFile->data[0]);
-				if ($searchpath !== false ) {
-					$subarray = $xmlDrugFile->data[0];
-					for ($i = 0; $i < (sizeof($searchpath)-2); $i = $i+1) {
-						$subarray = $subarray[$searchpath[$i]];
-					}
-					$i = $searchpath[$i]+1;
-					if ($drug_id == 10) {
-						echo "";
-					}
-					for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
 						if ($subarray[$k]["name"] == "TEXT") {
 							$subsubarray = $subarray[$k]["child"];
 							for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
 								if ($subsubarray[$j]["name"] == "PARAGRAPH") {
-									$overdosage = $subsubarray[$j]["content"];
-									if ($j == 0) {
-										$fields[] = $overdosage;
-									} else {
-										$fields[sizeof($fields)-1] .= " $overdosage";
-									}
+									getXmlContent($subsubarray[$j]["content"]);
 								} else {
-									$errors[$file] .= " DOSAGE";
+									$errors[$file] .= " $seperate_table";
 								}
 							}
 						} else if ($subarray[$k]["name"] == "COMPONENT") {
@@ -424,25 +510,11 @@ foreach ($files as $file) {
 									for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
 										$temp = $subsubarray[$j]["child"][$l];
 										if ($temp["name"] == "TITLE") {
-											if ($temp["content"]) {
-												$overdosage = $temp["content"].":";
-												if (sizeof($fields) > 0) {
-													$fields[sizeof($fields)-1] .= " <br/>$overdosage";
-												} else {
-													$fields[] = "$overdosage";
-												}
-											}
+											getXmlContent($temp["content"], ":");
 										} else if ($temp["name"] == "TEXT") {
 											for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
 												if ($temp["child"][$m]["name"] == "PARAGRAPH") {
-													if ($temp["child"][$m]["content"]) {
-														$overdosage = $temp["child"][$m]["content"];
-														if (sizeof($fields) > 0) {
-															$fields[sizeof($fields)-1] .= " $overdosage";
-														} else {
-															$fields[] = "$overdosage";
-														}
-													}
+													getXmlContent($temp["child"][$m]["content"]);
 												}
 											}
 										}  else if ($temp["name"] == "COMPONENT") {
@@ -452,89 +524,158 @@ foreach ($files as $file) {
 													for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
 														$temp2 = $temp1["child"][$o];
 														if ($temp2["name"] == "TITLE") {
-															if ($temp2["content"]) {
-																$overdosage = $temp2["content"].":";
-																if (sizeof($fields) > 0) {
-																	$fields[sizeof($fields)-1] .= "<br/>"."$overdosage";
-																}
-															}
+															getXmlContent($temp2["content"], ":");
 														} else if ($temp2["name"] == "TEXT") {
 															for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
 																if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
-																	if ($temp2["child"][$m]["content"]) {
-																		$overdosage = $temp2["child"][$m]["content"];
-																		if (sizeof($fields) > 0) {
-																			$fields[sizeof($fields)-1] .= " $overdosage";
-																		} else {
-																			$fields[] = "$overdosage";
-																		}
-																	}
+																	getXmlContent($temp2["child"][$m]["content"]);
 																}
 															}
 														}
 													}
 												} else {
-													$errors[$file] .= " DOSAGE";
+													$errors[$file] .= " $seperate_table";
 												}
 											}
 										}
 									}
 								} else {
-									$errors[$file] .= " DOSAGE";
+									$errors[$file] .= " $seperate_table";
 								}
 							}
 						}				
+					}
+				}
+
+// CONTRAINDICATIONS
+			} else if ($seperate_table == "contraindications") {
+				$searchpath = array_searchRecursive("CONTRAINDICATIONS", $xmlDrugFile->data[0]);
 /*
-						$subsubarray = $subarray[$k]["child"];
-						if (($subsubarray["child"][2]["name"] == "TITLE") && ($subsubarray["name"] == "SECTION")) {
-							for ($paragaph_location = sizeof($subsubarray["child"][2]); $paragaph_location > 2; $paragaph_location = $paragaph_location - 1) {
-								if (($subsubarray["child"][$paragaph_location]["name"] == "TEXT")) {
-									if ($subsubarray["child"][$paragaph_location]["child"] != null) {
-										$dosage = $subsubarray["child"][2]["content"];
-										$fields[] = $dosage . ":";
-										foreach ($subsubarray["child"][$paragaph_location]["child"] as $description_p) {
-											if ($description_p["name"] == "PARAGRAPH") {
-												$description = $description_p["content"];
-												$fields[sizeof($fields)-1] .= " " . $description;
-											}
-										}
-									}
-								} else if (($subsubarray["child"][sizeof($subsubarray["child"])-1]["name"] == "COMPONENT")){
-									for ($paragaph_location1 = sizeof($subsubarray["child"])-1; $paragaph_location1 > 2; $paragaph_location1 = $paragaph_location1 - 1) {
-										$subarray1 = $subsubarray["child"][$paragaph_location1]["child"][0];
-										if ($subarray1["child"][2]["name"] == "TITLE") {
-											for ($paragaph_location2 = (sizeof($subarray1["child"])-1); $paragaph_location2 > 2; $paragaph_location2 = $paragaph_location2 - 1) {
-												if (($subarray1["child"][$paragaph_location2]["name"] == "TEXT")) {
-													$dosage = $subarray1["child"][2]["content"];
-													$fields[] = $dosage .":";
-													foreach ($subarray1["child"][$paragaph_location2]["child"] as $description_p) {
-														if ($description_p["name"] == "PARAGRAPH") {
-															$description = $description_p["content"];
-															$fields[sizeof($fields)-1] .= " " . $description;
-														}
-													}
+				if ($searchpath === false) {
+					$searchpath = array_searchRecursive("Contraindications", $xmlDrugFile->data[0]);
+				}
+*/
+				if ($searchpath !== false ) {
+					$subarray = $xmlDrugFile->data[0];
+					for ($i = 0; $i < (sizeof($searchpath)-2); $i = $i+1) {
+						$subarray = $subarray[$searchpath[$i]];
+					}
+					$i = $searchpath[$i]+1;
+					for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
+						if ($subarray[$k]["name"] == "TEXT") {
+							$subsubarray = $subarray[$k]["child"];
+							for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+								if ($subsubarray[$j]["name"] == "PARAGRAPH") {
+									getXmlContent($subsubarray[$j]["content"]);
+								} else {
+									$errors[$file] .= " $seperate_table";
+								}
+							}
+						} else if ($subarray[$k]["name"] == "COMPONENT") {
+							$subsubarray = $subarray[$k]["child"];
+							for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+								if ($subsubarray[$j]["name"] == "SECTION") {
+									for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
+										$temp = $subsubarray[$j]["child"][$l];
+										if ($temp["name"] == "TITLE") {
+											getXmlContent($temp["content"], ":");
+										} else if ($temp["name"] == "TEXT") {
+											for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
+												if ($temp["child"][$m]["name"] == "PARAGRAPH") {
+													getXmlContent($temp["child"][$m]["content"]);
 												}
 											}
-
+										}  else if ($temp["name"] == "COMPONENT") {
+											for ($n = 0; $n < sizeof($temp["child"]); $n = $n + 1) {
+												$temp1 = $temp["child"][$n];
+												if ($temp1["name"] == "SECTION") {
+													for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
+														$temp2 = $temp1["child"][$o];
+														if ($temp2["name"] == "TITLE") {
+															getXmlContent($temp2["content"], ":");
+														} else if ($temp2["name"] == "TEXT") {
+															for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
+																if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
+																	getXmlContent($temp2["child"][$m]["content"]);
+																}
+															}
+														}
+													}
+												} else {
+													$errors[$file] .= " $seperate_table";
+												}
+											}
 										}
-
 									}
-								}								
+								} else {
+									$errors[$file] .= " $seperate_table";
+								}
 							}
-						}
-*/
+						}				
 					}
-									
-					/*
-					$i = 0;
-					while($parent_subtree["child"][0]["child"][$i]["name"] == "ITEM") {
-						$dosage = $parent_subtree["child"][0]["child"][$i]["content"];
-						if (($dosage != null) && ($dosage != "")) {
-							$fields[] = $dosage;
-						}
-						$i++;
+				}
+
+// DOSAGE AND ADMINISTRATION	
+			} else if ($seperate_table == "dosage") {
+				$searchpath = array_searchRecursive("DOSAGE AND ADMINISTRATION", $xmlDrugFile->data[0]);
+				if ($searchpath !== false ) {
+					$subarray = $xmlDrugFile->data[0];
+					for ($i = 0; $i < (sizeof($searchpath)-2); $i = $i+1) {
+						$subarray = $subarray[$searchpath[$i]];
 					}
-					*/
+					$i = $searchpath[$i]+1;
+					for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
+						if ($subarray[$k]["name"] == "TEXT") {
+							$subsubarray = $subarray[$k]["child"];
+							for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+								if ($subsubarray[$j]["name"] == "PARAGRAPH") {
+									getXmlContent($subsubarray[$j]["content"]);
+								} else {
+									$errors[$file] .= " $seperate_table";
+								}
+							}
+						} else if ($subarray[$k]["name"] == "COMPONENT") {
+							$subsubarray = $subarray[$k]["child"];
+							for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+								if ($subsubarray[$j]["name"] == "SECTION") {
+									for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
+										$temp = $subsubarray[$j]["child"][$l];
+										if ($temp["name"] == "TITLE") {
+											getXmlContent($temp["content"], ":");
+										} else if ($temp["name"] == "TEXT") {
+											for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
+												if ($temp["child"][$m]["name"] == "PARAGRAPH") {
+													getXmlContent($temp["child"][$m]["content"]);
+												}
+											}
+										}  else if ($temp["name"] == "COMPONENT") {
+											for ($n = 0; $n < sizeof($temp["child"]); $n = $n + 1) {
+												$temp1 = $temp["child"][$n];
+												if ($temp1["name"] == "SECTION") {
+													for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
+														$temp2 = $temp1["child"][$o];
+														if ($temp2["name"] == "TITLE") {
+															getXmlContent($temp2["content"], ":");
+														} else if ($temp2["name"] == "TEXT") {
+															for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
+																if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
+																	getXmlContent($temp2["child"][$m]["content"]);
+																}
+															}
+														}
+													}
+												} else {
+													$errors[$file] .= " $seperate_table";
+												}
+											}
+										}
+									}
+								} else {
+									$errors[$file] .= " $seperate_table";
+								}
+							}
+						}				
+					}
 				}
 			}
 
@@ -546,7 +687,11 @@ foreach ($files as $file) {
 					$sql_query = "INSERT INTO ".$seperate_table." (drug, field)  VALUES (".$drug_id.", '".$field."')";
 					if (!mysql_query ($sql_query)) {
 						die(mysql_error() . " - query: ".$sql_query);
-					}		
+					}
+					if (strlen($field) > 10) {
+						$found_text[$seperate_table]["count"] = $found_text[$seperate_table]["count"] + 1;
+						$found_text[$seperate_table]["length"] = $found_text[$seperate_table]["length"] + strlen($field);
+					}
 				} else {
 					$sql1 = "";
 					$sql2 = "";
@@ -583,6 +728,11 @@ foreach ($files as $file) {
 					if (!mysql_query ($sql_query)) {
 						die(mysql_error() . " - query: ".$sql_query);
 					}		
+					if (strlen($sql2) > 10) {
+						$found_text[$seperate_table]["count"] = $found_text[$seperate_table]["count"] + 1;
+						$found_text[$seperate_table]["length"] = $found_text[$seperate_table]["length"] + strlen($sql2);
+						
+					}
 				}
 			}
 		}
@@ -590,26 +740,9 @@ foreach ($files as $file) {
 }
 
 // ERROR PRINTING
-print_r($errors);
+// print_r($errors);
 
-
-
-// if(is_array($val)){
-
-
-/*
-				else {
-					$file_handle = fopen("dailymed/".$file, "r");
-					if (!$file_handle) {
-						die ("File not found ".$file);
-					}
-					while (!feof($file_handle)) {
-						$line = trim(fgets($file_handle));
-						if (strpos($line, "The most common side effects of") !== false) {
-							echo $file."\n";
-						}
-					}	
-					
-*/
+// STATS PRINTING
+print_r($found_text);
 
 ?>
