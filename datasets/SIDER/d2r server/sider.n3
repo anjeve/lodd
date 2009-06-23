@@ -1,0 +1,213 @@
+@prefix map: <file:/C:/apps/sider/sider.n3#> .
+@prefix db: <> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dbpedia: <http://dbpedia.org/ontology/> .
+@prefix drugbank: <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/> .
+@prefix diseasome: <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/> .
+@prefix sider: <http://www4.wiwiss.fu-berlin.de/sider/resource/sider/> .
+@prefix vocabClass: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/class/> .
+@prefix vocabProperty: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/property/> .
+
+map:Server a d2r:Server;
+    rdfs:label "D2R Server publishing the SIDER Dataset";
+    d2r:baseURI <http://www4.wiwiss.fu-berlin.de/sider/>;
+    d2r:port 2032;
+    .
+
+map:database a d2rq:Database;
+    d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql://127.0.0.1/lodd_sider?autoReconnect=true";
+    d2rq:username "d2r";
+    .
+
+
+# Table drugs
+map:drugs a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "drugs/@@drugs.sider_drug_id|urlify@@";
+	d2rq:class sider:drugs;
+	d2rq:classDefinitionLabel "drugs";
+	.
+map:drugs__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@drugs.name@@";
+	.
+map:drugs_sider_drug_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property sider:siderDrugId;
+	d2rq:propertyDefinitionLabel "drugs sider_drug_id";
+	d2rq:column "drugs.sider_drug_id";
+	.
+map:siderDrugLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property foaf:page;
+	d2rq:uriPattern "http://sideeffects.embl.de/drugs/@@drugs.sider_drug_id@@";
+	.
+map:stitchDrugLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property foaf:page;
+	d2rq:uriPattern "http://stitch.embl.de/cgi/show_network_section.pl?identifier=-@@drugs.sider_drug_id@@&input_query_species=9606";
+	.
+map:drugs_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property sider:drugName;
+	d2rq:propertyDefinitionLabel "drugs name";
+	d2rq:column "drugs.name";
+	.
+map:labelLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property rdfs:seeAlso;
+    d2rq:join "label_mapping.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriColumn "label_mapping.original_file";
+	d2rq:condition "label_mapping.original_file <> ''";
+	.
+
+map:sideeffectCoStart a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property sider:sideEffect;
+    d2rq:join "costart_adverse_effects.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriPattern "side_effects/@@costart_adverse_effects.sideeffect_id|urlify@@";
+	.
+
+map:sideeffectEuphoria a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property sider:sideEffect;
+    d2rq:join "euphoria_adverse_effects.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriPattern "side_effects/@@euphoria_adverse_effects.sideeffect_id|urlify@@";
+	.
+
+map:indicationEuphoria a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property sider:sideEffect;
+    d2rq:join "euphoria_indications_raw.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriPattern "side_effects/@@euphoria_indications_raw.sideeffect_id|urlify@@";
+	d2rq:condition "euphoria_indications_raw.sider_drug_id <> ''";
+	.
+
+map:indicationCoStart a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property sider:sideEffect;
+    d2rq:join "costart_indications_raw.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriPattern "side_effects/@@costart_indications_raw.sideeffect_id|urlify@@";
+	d2rq:condition "costart_indications_raw.sider_drug_id <> ''";
+	.
+	
+# Table drugs_alternate_names
+
+map:drugs_alternate_names_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property sider:drugName;
+	d2rq:propertyDefinitionLabel "drugs_alternate_names name";
+    d2rq:join "drugs_alternate_names.sider_drug_id = drugs.sider_drug_id";
+	d2rq:column "drugs_alternate_names.name";
+	.
+
+
+# Table label_mapping
+
+map:label_mapping_stitch_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property sider:stitchId;
+	d2rq:propertyDefinitionLabel "label_mapping stitch_id";
+    d2rq:join "label_mapping.sider_drug_id = drugs.sider_drug_id";
+	d2rq:column "label_mapping.stitch_id";
+	.
+
+	
+# Table sider_drugbank
+
+map:drugbankLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "sider_drugbank.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugs/@@sider_drugbank.drugbank_drug@@".
+
+	
+# Table sider_dailymed
+
+map:dailymedLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "sider_dailymed.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/dailymed/resource/drugs/@@sider_dailymed.dailymed_drug@@".
+
+	
+# Table side_effects
+map:side_effects a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "side_effects/@@side_effects.sideeffect_id|urlify@@";
+	d2rq:class sider:side_effects;
+	d2rq:classDefinitionLabel "side_effects";
+	d2rq:condition "side_effects.sideeffect_id <> ''";
+	.
+map:side_effects__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@side_effects.name@@";
+	.
+map:side_effects_sideeffect_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property sider:sideEffectId;
+	d2rq:propertyDefinitionLabel "side_effects sideeffect_id";
+	d2rq:column "side_effects.sideeffect_id";
+	.
+map:side_effects_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property sider:sideEffectName;
+	d2rq:propertyDefinitionLabel "side_effects name";
+	d2rq:column "side_effects.name";
+	.
+map:siderSideEffectLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property foaf:page;
+	d2rq:uriPattern "http://sideeffects.embl.de/se/@@side_effects.sideeffect_id@@";
+	.
+
+# Table side effects alternate
+
+map:side_effects_alternate a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property sider:sideEffectName;
+	d2rq:propertyDefinitionLabel "side effects alternate name";
+    d2rq:join "side_effects_alternate.sideeffect_id = side_effects.sideeffect_id";
+	d2rq:column "side_effects_alternate.name";
+	.
+
+# DBpedia Diseases
+
+map:dbpediaDiseaseLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property owl:sameAs;
+    d2rq:join "dbpedia.sider_side_effect = side_effects.sideeffect_id";
+	d2rq:uriPattern "http://www.dbpedia.org/resource/@@dbpedia.dbpedia_disease@@".
+
+# Diseasome Diseases
+
+map:diseasomeDiseaseLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property owl:sameAs;
+    d2rq:join "diseasome_sider.sider_side_effect = side_effects.sideeffect_id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/@@diseasome_sider.diseasome_disease@@".
+
+# SILK Mappings
+
+map:silkDiseasomeDiseaseLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property owl:sameAs;
+    d2rq:join "diseasome_sider_diseases.sider = side_effects.sideeffect_id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/@@diseasome_sider_diseases.diseasome@@";
+	.
+
+map:silkTCMDiseaseLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property owl:sameAs;
+    d2rq:join "sider_tcm_diseases.sider = side_effects.sideeffect_id";
+	d2rq:uriPattern "http://purl.org/net/tcm/tcm.lifescience.ntu.edu.tw/id/disease/@@sider_tcm_diseases.tcm@@";
+	.
