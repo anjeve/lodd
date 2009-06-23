@@ -8,6 +8,11 @@
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
 @prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dbpedia: <http://dbpedia.org/ontology/> .
+@prefix drugbank: <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/> .
+@prefix diseasome: <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/> .
+@prefix vocabClass: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/class/> .
+@prefix vocabProperty: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/property/> .
 
 map:Server a d2r:Server;
     rdfs:label "D2R Server publishing the Dailymed Dataset";
@@ -21,13 +26,32 @@ map:database a d2rq:Database;
     d2rq:username "d2r";
 	d2rq:resultSizeLimit 500;
     .
+
+map:trialIntervention a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "linkedct.id = drugs.id";
+	d2rq:uriPattern "http://data.linkedct.org/resource/intervention/@@linkedct.linkedct_id@@";
+.
 	
 # Table drugs
 map:drugs a d2rq:ClassMap;
 	d2rq:dataStorage map:database;
 	d2rq:uriPattern "drugs/@@drugs.id@@";
 	d2rq:class dailymed:drugs;
-	.
+	d2rq:additionalClassDefinitionProperty map:DrugEquivalenceDBpedia;
+    d2rq:additionalClassDefinitionProperty map:DrugEquivalenceDrugBank;
+	d2rq:class vocabClass:Offer;
+.
+
+map:DrugEquivalenceDBpedia a d2rq:AdditionalProperty;
+	d2rq:propertyName owl:equivalentClass;
+	d2rq:propertyValue dbpedia:Drug.
+
+map:DrugEquivalenceDrugBank a d2rq:AdditionalProperty;
+	d2rq:propertyName owl:equivalentClass;
+	d2rq:propertyValue drugbank:drugs.
+
 map:drugs__label a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
 	d2rq:property rdfs:label;
@@ -47,13 +71,29 @@ map:fullName a d2rq:PropertyBridge;
 map:activeIngredient a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
 	d2rq:property dailymed:activeIngredient;
-	d2rq:column "drugs.activeIngridient";
+	d2rq:uriPattern "ingredient/@@drugs.activeIngridient|urlify@@";
 	.
 
 map:activeMoiety a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
 	d2rq:property dailymed:activeMoiety;
-	d2rq:column "drugs.activeMoiety";
+	d2rq:uriPattern "ingredient/@@drugs.activeMoiety|urlify@@";
+	.
+
+map:ingredients a d2rq:ClassMap;
+    d2rq:uriPattern "ingredient/@@drugs.activeIngridient|urlify@@";
+    d2rq:class dailymed:ingredients;
+    d2rq:dataStorage map:database.
+
+map:ingredients a d2rq:ClassMap;
+    d2rq:uriPattern "ingredient/@@inactiveingredient.field|urlify@@";
+    d2rq:class dailymed:ingredients;
+    d2rq:dataStorage map:database.
+
+map:ingredients__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:ingredients;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@drugs.activeIngridient@@";
 	.
 	
 map:genericMedicine a d2rq:PropertyBridge;
@@ -71,22 +111,30 @@ map:routeOfAdministration a d2rq:PropertyBridge;
 map:representedOrganization a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
 	d2rq:property dailymed:representedOrganization;
-	d2rq:uriPattern "organization/@@drugs.representedOrganization|urlify@@";
+    d2rq:join "drugs.representedOrganization = organizations.id";
+	d2rq:uriPattern "organization/@@organizations.name|urlify@@";
 	.
 
 map:organization a d2rq:ClassMap;
-    d2rq:uriPattern "organization/@@drugs.representedOrganization|urlify@@";
+    d2rq:uriPattern "organization/@@organizations.name|urlify@@";
     d2rq:class dailymed:organization;
-    d2rq:dataStorage map:database.
+	d2rq:additionalClassDefinitionProperty map:OrganizationEquivalenceDBpedia;
+    d2rq:dataStorage map:database	.
+
+map:OrganizationEquivalenceDBpedia a d2rq:AdditionalProperty;
+	d2rq:propertyName owl:equivalentClass;
+	d2rq:propertyValue dbpedia:Organisation.
 
 map:organization__label a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:organization;
 	d2rq:property rdfs:label;
-	d2rq:pattern "@@drugs.representedOrganization@@";
+	d2rq:pattern "@@organizations.name@@";
+	d2rq:condition "drugs.representedOrganization <> ''";
 	.
 map:producesDrug a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:organization;
 	d2rq:property dailymed:producesDrug;
+    d2rq:join "drugs.representedOrganization = organizations.id";
 	d2rq:uriPattern "drugs/@@drugs.id@@";
 	.
 	
@@ -128,7 +176,7 @@ map:inactiveIngredient a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
     d2rq:property dailymed:inactiveIngredient;
     d2rq:join "drugs.id = inactiveingredient.drug";
-	d2rq:uriPattern "inactiveIngredient/@@inactiveingredient.field|urlify@@";
+	d2rq:uriPattern "ingredient/@@inactiveingredient.field|urlify@@";
 .
 
 map:dosage a d2rq:PropertyBridge;
@@ -207,3 +255,12 @@ map:possibleDiseaseTarget a d2rq:PropertyBridge;
     d2rq:join "drugs.id = drug_disease.dailymed_drug";
 	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/@@drug_disease.diseasome_disease@@";
 	.
+
+# SILK Mappings
+
+# map:silkTcmIngredientLink a d2rq:PropertyBridge;
+# 	d2rq:belongsToClassMap map:ingredients;
+# 	d2rq:property owl:sameAs;
+#     d2rq:join "dailymed_tcm_ingredients.dailymed = ingredients.id";
+# 	d2rq:uriPattern "http://purl.org/net/tcm/tcm.lifescience.ntu.edu.tw/id/ingredient/@@dailymed_tcm_ingredients.tcm@@";
+# 	.
