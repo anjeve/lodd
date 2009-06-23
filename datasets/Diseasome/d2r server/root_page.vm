@@ -33,7 +33,8 @@
 #end
     </div>
     <div class="section">
-      <p>This is a <a href="http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/" target="_blank">D2R Server</a> publishing the <a href="http://www.nd.edu/~alb/Publication06/145-HumanDisease_PNAS-14My07-Proc/Suppl/" target="_blank">Diseasome Dataset</a> as <a href="http://www.w3.org/DesignIssues/LinkedData.html">linked data</a> on the <a href="http://www.w3.org/2001/sw/" target="_blank">Semantic Web</a>. The database can be accessed using</p>
+      <p><a href="http://www.nd.edu/~alb/Publication06/145-HumanDisease_PNAS-14My07-Proc/Suppl/" target="_blank">Diseasome</a> publishes a network of 4,300 disorders and disease genes linked by known disorder-gene associations for exploring all known phenotype and disease gene associations, indicating the common genetic origin of many diseases. The list of disorders, disease genes, and associations between them was obtained from the <a href="http://www.ncbi.nlm.nih.gov/omim/">Online Mendelian Inheritance in Man</a> (OMIM), a compilation of human disease genes and phenotypes.<br/>
+		This is a <a href="http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/" target="_blank">D2R Server</a> publishing the <a href="http://www.nd.edu/~alb/Publication06/145-HumanDisease_PNAS-14My07-Proc/Suppl/" target="_blank">Diseasome</a> data as <a href="http://www.w3.org/DesignIssues/LinkedData.html">linked data</a> on the <a href="http://www.w3.org/2001/sw/" target="_blank">Semantic Web</a>. The database can be accessed using</p>
       <ol><li>your plain old web browser</li>
         <li>Semantic Web browsers</li>
         <li>SPARQL clients.</li></ol>
@@ -62,17 +63,18 @@
 		Number of diseases: 4,213 <br/>
 		Number of RDF links to other Linked Data sources: 28,489</p>
 		<p>Links to: <a href="http://www.linkedct.org/">LinkedCT</a>, <a href="http://www4.wiwiss.fu-berlin.de/dailymed/">DailyMed</a>, <a href="http://www4.wiwiss.fu-berlin.de/drugbank/">DrugBank</a>, and <a href="http://bio2rdf.org/">Bio2RDF's</a> GeneID, HGNC, OMIM, and Symbol.</p>
+        <p>Download dump: <a href="diseasome_dump.nt">N-Triples</a> (<a href="diseasome_dump.nt.bz2">BZip2</a>)</p>
       </div>
     </div>
 
     <div class="snorql">
       <div style="text-align: center;">
 		<a href="http://www.wiwiss.fu-berlin.de/en/institute/pwo/bizer/" title="FU Berlin, Web-based Systems Group">
-        <img src="fu_logo.gif" alt="FU Berlin, Web-based Systems Group">
+        <img src="fu_logo.gif" alt="FU Berlin, Web-based Systems Group"/>
         </a>
 		&nbsp;&nbsp;&nbsp;
 		<a href="http://esw.w3.org/topic/SweoIG/TaskForces/CommunityProjects/LinkingOpenData" title="Linking Open Data Community Project">
-        <img src="lod.png" alt="Linking Open Data Community Project">
+        <img src="lod.png" alt="Linking Open Data Community Project"/>
         </a>
       </div>
     </div>

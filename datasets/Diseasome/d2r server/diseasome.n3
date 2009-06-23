@@ -8,6 +8,10 @@
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
 @prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dbpedia: <http://dbpedia.org/ontology/> .
+@prefix drugbank: <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/> .
+@prefix vocabClass: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/class/> .
+@prefix vocabProperty: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/property/> .
 
 map:Server a d2r:Server;
     rdfs:label "D2R Server publishing the Diseasome Dataset";
@@ -19,12 +23,11 @@ map:database a d2rq:Database;
     d2rq:jdbcDriver "com.mysql.jdbc.Driver";
 	d2rq:jdbcDSN "jdbc:mysql://127.0.0.1/lodd_diseasome?autoReconnect=true";
     d2rq:username "d2r";
-	d2rq:resultSizeLimit 500;
     .
 	
 map:genes a d2rq:ClassMap;
 	d2rq:dataStorage map:database;
-	d2rq:uriPattern "genes/@@disease_genes.gene@@";
+	d2rq:uriPattern "genes/@@disease_genes.gene|urlify@@";
 	d2rq:class diseasome:genes;
 	.
 
@@ -43,7 +46,17 @@ map:hgncId a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:genes;
 	d2rq:property diseasome:hgncId;
 	d2rq:uriPattern "http://bio2rdf.org/hgnc:@@disease_genes.hgnc@@";
-	.
+	d2rq:additionalPropertyDefinitionProperty map:Bio2RdfHgncEquivalence;
+	d2rq:additionalPropertyDefinitionProperty map:DBpediaBio2RdfHgncEquivalence.
+
+map:Bio2RdfHgncEquivalence a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue drugbank:hgncId.
+
+map:DBpediaBio2RdfHgncEquivalence a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue dbpedia:hgncidLink.
+	
 map:hgncIdPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:genes;
 	d2rq:property diseasome:hgncIdPage;
@@ -53,7 +66,11 @@ map:geneId a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:genes;
 	d2rq:property diseasome:geneId;
 	d2rq:uriPattern "http://bio2rdf.org/geneid:@@disease_genes.geneid@@";
-	.
+	d2rq:additionalPropertyDefinitionProperty map:DBpediaBio2RdfGeneIdEquivalence.
+
+map:DBpediaBio2RdfGeneIdEquivalence a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue dbpedia:entrezgeneLink.
 
 # Table diseases
 map:diseases a d2rq:ClassMap;
@@ -75,7 +92,12 @@ map:omim a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:diseases;
 	d2rq:property diseasome:omim;
 	d2rq:uriPattern "http://bio2rdf.org/omim:@@diseases.omim@@";
-	.
+	d2rq:additionalPropertyDefinitionProperty map:DBpediaBio2RdfOmimEquivalence.
+
+map:DBpediaBio2RdfOmimEquivalence a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue dbpedia:omimLink.
+
 map:omimPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:diseases;
 	d2rq:property diseasome:omimPage;
@@ -89,7 +111,7 @@ map:chromosomalLocation a d2rq:PropertyBridge;
 map:class a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:diseases;
 	d2rq:property diseasome:class;
-	d2rq:uriPattern "diseaseClass/@@diseases.class@@";
+	d2rq:uriPattern "diseaseClass/@@diseases.class|urlify@@";
 	.
 map:size a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:diseases;
@@ -144,3 +166,49 @@ map:trialCondition a d2rq:PropertyBridge;
     d2rq:join "linkedct.id = diseases.id";
 	d2rq:uriPattern "http://data.linkedct.org/resource/condition/@@linkedct.linkedct_id@@";
 .
+
+# DBpedia
+
+map:dbpediaDiseaseLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property owl:sameAs;
+    d2rq:join "dbpedia.diseasome_disease = diseases.id";
+	d2rq:uriPattern "http://www.dbpedia.org/resource/@@dbpedia.dbpedia_disease@@".
+
+# Sider Side Effects
+
+map:siderSideEffectLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property owl:sameAs;
+    d2rq:join "diseasome_sider.diseasome_disease = diseases.id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/sider/resource/side_effects/@@diseasome_sider.sider_side_effect@@".
+
+# SILK Mappings
+
+map:silkDbpediaGenesLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genes;
+	d2rq:property owl:sameAs;
+    d2rq:join "dbpedia_diseasome_genes.diseasome = disease_genes.gene";
+	d2rq:uriPattern "http://www.dbpedia.org/resource/@@dbpedia_diseasome_genes.dbpedia@@";
+	.
+	
+map:silkTCMGenesLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genes;
+	d2rq:property owl:sameAs;
+    d2rq:join "diseasome_tcm_genes.diseasome = disease_genes.gene";
+	d2rq:uriPattern "http://purl.org/net/tcm/tcm.lifescience.ntu.edu.tw/id/gene/@@diseasome_tcm_genes.tcm@@";
+	.
+	
+map:silkTCMDiseaseLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property owl:sameAs;
+    d2rq:join "diseasome_tcm_diseases.diseasome = diseases.id";
+	d2rq:uriPattern "http://purl.org/net/tcm/tcm.lifescience.ntu.edu.tw/id/disease/@@diseasome_tcm_diseases.tcm@@";
+	.
+	
+map:silkSiderDiseaseLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property owl:sameAs;
+    d2rq:join "diseasome_sider_diseases.diseasome = diseases.id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/sider/resource/side_effects/@@diseasome_sider_diseases.sider@@";
+	.
