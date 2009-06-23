@@ -31,7 +31,8 @@
 #end
     </div>
     <div class="section">
-      <p>This is a <a href="http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/" target="_blank">D2R Server</a> publishing the <a href="http://www.drugbank.ca" target="_blank">DrugBank Database</a> as <a href="http://www.w3.org/DesignIssues/LinkedData.html">linked data</a> on the <a href="http://www.w3.org/2001/sw/" target="_blank">Semantic Web</a>. The database can be accessed using</p>
+      <p><a href="http://www.drugbank.ca" target="_blank">DrugBank</a> is a repository of almost 5000 FDA-approved small molecule and biotech drugs. It contains detailed information about drugs including chemical, pharmacological and pharmaceutical data; along with comprehensive drug target data such as sequence, structure, and pathway information. <br/>
+	  This is a <a href="http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/" target="_blank">D2R Server</a> publishing the <a href="http://www.drugbank.ca" target="_blank">DrugBank</a> data as <a href="http://www.w3.org/DesignIssues/LinkedData.html">linked data</a> on the <a href="http://www.w3.org/2001/sw/" target="_blank">Semantic Web</a>. The database can be accessed using</p>
       <ol><li>your plain old web browser</li>
         <li>Semantic Web browsers</li>
         <li>SPARQL clients.</li></ol>
@@ -60,17 +61,18 @@
 		Number of drugs: 4,772 <br/>
 		Number of RDF links to other Linked Data sources: 60,244</p>
 		<p>Links to: <a href="http://www.dbpedia.org/">DBpedia</a>, <a href="http://www.linkedct.org/">LinkedCT</a>, <a href="http://www4.wiwiss.fu-berlin.de/dailymed/">DailyMed</a>, <a href="http://www4.wiwiss.fu-berlin.de/diseasome/">Diseasome</a>, and <a href="http://bio2rdf.org/">Bio2RDF's</a> CAS, ChEBI, GeneID, HGNC, IUPAC, KEGG Compound, KEGG Drug, PDB, PFAM, and SwissProt.</p>
+        <p>Download dump: <a href="drugbank_dump.nt">N-Triples</a> (<a href="drugbank_dump.nt.bz2">BZip2</a>)</p>
       </div>
     </div>
 
     <div class="snorql">
       <div style="text-align: center;">
 		<a href="http://www.wiwiss.fu-berlin.de/en/institute/pwo/bizer/" title="FU Berlin, Web-based Systems Group">
-        <img src="fu_logo.gif" alt="FU Berlin, Web-based Systems Group">
+        <img src="fu_logo.gif" alt="FU Berlin, Web-based Systems Group"/>
         </a>
 		&nbsp;&nbsp;&nbsp;
 		<a href="http://esw.w3.org/topic/SweoIG/TaskForces/CommunityProjects/LinkingOpenData" title="Linking Open Data Community Project">
-        <img src="lod.png" alt="Linking Open Data Community Project">
+        <img src="lod.png" alt="Linking Open Data Community Project"/>
         </a>
       </div>
     </div>

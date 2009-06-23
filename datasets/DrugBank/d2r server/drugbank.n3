@@ -8,6 +8,11 @@
 @prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
 @prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dbpedia: <http://dbpedia.org/ontology/> .
+@prefix dailymed: <http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/> .
+@prefix diseasome: <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/> .
+@prefix vocabClass: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/class/> .
+@prefix vocabProperty: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/property/> .
 
 map:Server a d2r:Server;
     rdfs:label "D2R Server publishing the DrugBank Database";
@@ -128,7 +133,19 @@ map:drugs a d2rq:ClassMap;
 	d2rq:dataStorage map:database;
 	d2rq:uriPattern "drugs/@@drugs.id|urlify@@";
 	d2rq:class drugbank:drugs;
-	.
+    d2rq:additionalClassDefinitionProperty map:DrugEquivalenceDBpedia;
+    d2rq:additionalClassDefinitionProperty map:DrugEquivalenceDailyMed;
+	d2rq:class vocabClass:Offer;
+.
+
+map:DrugEquivalenceDBpedia a d2rq:AdditionalProperty;
+	d2rq:propertyName owl:equivalentClass;
+	d2rq:propertyValue dbpedia:Drug.
+
+map:DrugEquivalenceDailyMed a d2rq:AdditionalProperty;
+	d2rq:propertyName owl:equivalentClass;
+	d2rq:propertyValue dailymed:drugs.
+	
 map:_label a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
 	d2rq:property rdfs:label;
@@ -388,7 +405,12 @@ map:swissprotId a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
 	d2rq:property drugbank:swissprotId;
 	d2rq:uriPattern "http://bio2rdf.org/uniprot:@@drugs.swissprotId@@";
-	.
+	d2rq:additionalPropertyDefinitionProperty map:DBpediaBio2RdfUniProtEquivalence.
+
+map:DBpediaBio2RdfUniProtEquivalence a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue dbpedia:uniprotLink.
+
 map:swissprotPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
 	d2rq:property drugbank:swissprotPage;
@@ -497,7 +519,12 @@ map:pfamDomainFunction a d2rq:PropertyBridge;
     d2rq:property drugbank:pfamDomainFunction;
     d2rq:join "targets.id = drugtargetpfamdomainfunction.target";
 	d2rq:uriPattern "http://bio2rdf.org/pfam:@@drugtargetpfamdomainfunction.field@@";
-.
+	d2rq:additionalPropertyDefinitionProperty map:DBpediaBio2RdfPfamEquivalence.
+
+map:DBpediaBio2RdfPfamEquivalence a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue dbpedia:pfamLink.
+
 map:pfamDomainFunctionPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
     d2rq:property drugbank:pfamDomainFunctionPage;
@@ -557,7 +584,11 @@ map:enzymeSwissprotId a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:enzymes;
 	d2rq:property drugbank:swissprotId;
 	d2rq:uriPattern "http://bio2rdf.org/uniprot:@@enzymes.swissprotId@@";
-	.
+	d2rq:additionalPropertyDefinitionProperty map:DBpediaBio2RdfUniProtEquivalence1.
+
+map:DBpediaBio2RdfUniProtEquivalence1 a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue dbpedia:uniprotLink.
 
 map:enzymeSwissprotPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:enzymes;
@@ -674,7 +705,18 @@ map:hgncId a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
 	d2rq:property drugbank:hgncId;
 	d2rq:uriPattern "http://bio2rdf.org/hgnc:@@targets.hgncId@@";
+	d2rq:additionalPropertyDefinitionProperty map:Bio2RdfHgncEquivalence;
+	d2rq:additionalPropertyDefinitionProperty map:DBpediaBio2RdfHgncEquivalence;
 	.
+
+map:Bio2RdfHgncEquivalence a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue diseasome:hgncId.
+
+map:DBpediaBio2RdfHgncEquivalence a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue dbpedia:hgncidLink.
+
 map:hgncIdPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
 	d2rq:property drugbank:hgncIdPage;
@@ -739,7 +781,12 @@ map:targetSwissprotId a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
 	d2rq:property drugbank:swissprotId;
 	d2rq:uriPattern "http://bio2rdf.org/uniprot:@@targets.swissprotId@@";
-	.
+	d2rq:additionalPropertyDefinitionProperty map:DBpediaBio2RdfUniProtEquivalence3.
+
+map:DBpediaBio2RdfUniProtEquivalence3 a d2rq:AdditionalProperty;
+    d2rq:propertyName owl:equivalentProperty;
+    d2rq:propertyValue dbpedia:uniprotLink.
+
 map:targetSwissprotPage a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
 	d2rq:property drugbank:swissprotPage;
@@ -777,3 +824,19 @@ map:trialIntervention a d2rq:PropertyBridge;
     d2rq:join "linkedct.id = drugs.id";
 	d2rq:uriPattern "http://data.linkedct.org/resource/intervention/@@linkedct.linkedct_id@@";
 .
+
+# SILK Mappings
+
+map:silkTcmDrugLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "drugbank_tcm_drugs.drugbank = drugs.id";
+	d2rq:uriPattern "http://purl.org/net/tcm/tcm.lifescience.ntu.edu.tw/id/medicine/@@drugbank_tcm_drugs.tcm@@";
+	.
+
+map:silkTcmGeneLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property owl:sameAs;
+    d2rq:join "drugbank_tcm_genes.drugbank = targets.id";
+	d2rq:uriPattern "http://purl.org/net/tcm/tcm.lifescience.ntu.edu.tw/id/gene/@@drugbank_tcm_genes.tcm@@";
+	.
