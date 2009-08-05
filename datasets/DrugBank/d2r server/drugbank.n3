@@ -22,9 +22,8 @@ map:Server a d2r:Server;
 
 map:database a d2rq:Database;
     d2rq:jdbcDriver "com.mysql.jdbc.Driver";
-	d2rq:jdbcDSN "jdbc:mysql://127.0.0.1/drugbank?autoReconnect=true";
+	d2rq:jdbcDSN "jdbc:mysql://127.0.0.1/lodd_drugbank?autoReconnect=true";
     d2rq:username "d2r";
-	d2rq:resultSizeLimit 500;
     .
 	
 map:target a d2rq:PropertyBridge;
@@ -121,9 +120,9 @@ map:drugType a d2rq:PropertyBridge;
     d2rq:join "drugs.id = drugtype.drug";
 .
 
-map:drugReference a d2rq:PropertyBridge;
+map:reference a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
-    d2rq:property drugbank:drugReference;
+    d2rq:property drugbank:reference;
     d2rq:join "drugs.id = drugreference.drug";
 	d2rq:column "drugreference.field";
 .
@@ -479,18 +478,18 @@ map:cellularLocation a d2rq:PropertyBridge;
 	d2rq:column "drugtargetcellularlocation.field";
 .
 
-map:reference a d2rq:PropertyBridge;
+map:drugReference a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
-    d2rq:property drugbank:reference;
-    d2rq:join "targets.id = drugtargetcellularlocation.target";
-	d2rq:column "drugtargetdrugreferences.field";
+    d2rq:property drugbank:drugReference;
+    d2rq:join "targets.id = drugtargetdrugreferences.target";
+	d2rq:uriPattern "references/@@drugtargetdrugreferences.field@@";
 .
 
 map:generalReference a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:targets;
     d2rq:property drugbank:generalReference;
     d2rq:join "targets.id = drugtargetgeneralreferences.target";
-	d2rq:column "drugtargetgeneralreferences.field";
+	d2rq:uriPattern "references/@@drugtargetgeneralreferences.field@@";
 .
 
 map:goClassificationComponent a d2rq:PropertyBridge;
@@ -825,6 +824,32 @@ map:trialIntervention a d2rq:PropertyBridge;
 	d2rq:uriPattern "http://data.linkedct.org/resource/intervention/@@linkedct.linkedct_id@@";
 .
 
+# References
+
+map:references a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "references/@@references.pubmed@@";
+	d2rq:class drugbank:references;
+	.
+	
+map:references__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:references;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@references.pubmed@@";
+	.
+
+map:bio2rdfPubmedReference a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:references;
+	d2rq:property owl:sameAs;
+	d2rq:uriPattern "http://bio2rdf.org/pubmed:@@references.pubmed@@";
+	.
+
+map:pubmedLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:references;
+	d2rq:property foaf:page;
+	d2rq:uriPattern "http://www.ncbi.nlm.nih.gov/pubmed/@@references.pubmed@@";
+	.
+
 # SILK Mappings
 
 map:silkTcmDrugLink a d2rq:PropertyBridge;
@@ -840,3 +865,18 @@ map:silkTcmGeneLink a d2rq:PropertyBridge;
     d2rq:join "drugbank_tcm_genes.drugbank = targets.id";
 	d2rq:uriPattern "http://purl.org/net/tcm/tcm.lifescience.ntu.edu.tw/id/gene/@@drugbank_tcm_genes.tcm@@";
 	.
+
+map:silkDBpediaGeneLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:targets;
+	d2rq:property owl:sameAs;
+    d2rq:join "dbpedia_drugbank_genes.drugbank = targets.id";
+	d2rq:uriPattern "http://www.dbpedia.org/resource/@@dbpedia_drugbank_genes.dbpedia@@";
+.
+
+map:silkSiderDrugLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "sider_drugbank_drugs.drugbank = drugs.id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/sider/resource/drugs/@@sider_drugbank_drugs.sider@@";
+	.
+
