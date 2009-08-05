@@ -1,0 +1,238 @@
+@prefix map: <file:/C:/apps/stitch/stitch.n3#> .
+@prefix db: <> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dbpedia: <http://dbpedia.org/ontology/> .
+@prefix drugbank: <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/> .
+@prefix diseasome: <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/> .
+@prefix sider: <http://www4.wiwiss.fu-berlin.de/sider/resource/sider/> .
+@prefix stitch: <http://www4.wiwiss.fu-berlin.de/stitch/resource/stitch/> .
+@prefix vocabClass: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/class/> .
+@prefix vocabProperty: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/property/> .
+
+map:Server a d2r:Server;
+    rdfs:label "D2R Server publishing the STITCH Dataset";
+    d2r:baseURI <http://www4.wiwiss.fu-berlin.de/stitch/>;
+    d2r:port 2033;
+    .
+
+map:database a d2rq:Database;
+    d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql://127.0.0.1/lodd_stitch?autoReconnect=true";
+    d2rq:username "d2r";
+	d2rq:resultSizeLimit 500;
+    .
+
+# Table chemicals
+map:chemicals a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "chemicals/@@chemicals.chemical|urlify@@";
+	d2rq:class stitch:chemicals;
+	d2rq:classDefinitionLabel "chemicals";
+	.
+map:chemicals__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@chemicals.name@@";
+	.
+
+map:chemical_molecular_weight a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+	d2rq:property stitch:molecularWeight;
+	d2rq:column "chemicals.molecular_weight";
+	d2rq:datatype dbpedia:gram-mole;
+	.
+
+map:chemical_smiles a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+	d2rq:property stitch:smilesString;
+	d2rq:column "chemicals.SMILES_string";
+	.
+
+map:chemical_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+	d2rq:property stitch:name;
+	d2rq:column "chemicals.name";
+	.
+	
+map:chemical_alias a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+	d2rq:property stitch:name;
+    d2rq:join "chemical_aliases.chemical = chemicals.chemical";
+	d2rq:column "chemical_aliases.alias";
+	.
+	
+map:chemicals_atc a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+    d2rq:property stitch:atcId;
+    d2rq:join "atc.chemical = chemicals.chemical";
+	d2rq:column "atc.id";
+.
+
+map:chemicals_pc a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+    d2rq:property stitch:pubchemCompoundId;
+    d2rq:join "pc.chemical = chemicals.chemical";
+	d2rq:column "pc.id";
+.
+	
+map:chemicals_ps a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+    d2rq:property stitch:pubchemSubstanceId;
+    d2rq:join "ps.chemical = chemicals.chemical";
+	d2rq:column "ps.id";
+.
+
+map:chemicals_kegg a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+    d2rq:property stitch:keggId;
+    d2rq:join "kegg.chemical = chemicals.chemical";
+	d2rq:column "kegg.id";
+.
+
+map:chemicals_chebi a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+    d2rq:property stitch:chebiId;
+    d2rq:join "chebi.chemical = chemicals.chemical";
+	d2rq:column "chebi.id";
+.
+
+map:chemical1_interactsWith a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+    d2rq:property stitch:interactsWith;
+    d2rq:join "chemical_links.chemical1 = chemicals.chemical";
+	d2rq:uriPattern "chemicals/@@chemical_links.chemical2|urlify@@";
+.
+
+map:chemical2_interactsWith a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicals;
+    d2rq:property stitch:interactsWith;
+    d2rq:join "chemical_links.chemical2 = chemicals.chemical";
+	d2rq:uriPattern "chemicals/@@chemical_links.chemical1|urlify@@";
+.
+
+map:protein_interactsWith a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:proteins;
+    d2rq:property stitch:interactsWith;
+    d2rq:join "protein_chemical_links.protein = proteins.id";
+	d2rq:uriPattern "@@protein_chemical_links.chemical|urlify@@";
+.
+
+# Table proteins
+map:proteins a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "proteins/@@proteins.id|urlify@@";
+	d2rq:class stitch:proteins;
+	d2rq:classDefinitionLabel "proteins";
+	.
+
+map:swissprotLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:proteins;
+	d2rq:property owl:sameAs;
+	d2rq:uriPattern "http://bio2rdf.org/prot:@@proteins.id@@";
+.
+
+# Table interactions
+map:chemicalProteinInteractions a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "interactions/@@protein_chemical_links.chemical|urlify@@_@@protein_chemical_links.protein|urlify@@";
+	d2rq:class stitch:chemicalProteinInteractions;
+	d2rq:classDefinitionLabel "interactions";
+	.
+
+map:interactions__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalProteinInteractions;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@protein_chemical_links.chemical@@ @@protein_chemical_links.protein@@";
+	.
+
+map:interaction_score a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalProteinInteractions;
+	d2rq:property stitch:score;
+	d2rq:column "protein_chemical_links.combined_score";
+	.
+
+map:interaction_chemical a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalProteinInteractions;
+	d2rq:property stitch:chemical;
+	d2rq:uriPattern "chemicals/@@protein_chemical_links.chemical|urlify@@";
+	.
+
+map:interaction_protein a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalProteinInteractions;
+	d2rq:property stitch:protein;
+	d2rq:uriPattern "proteins/@@protein_chemical_links.protein_id|urlify@@";
+	.
+
+map:interaction_organism a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalProteinInteractions;
+	d2rq:property stitch:organism;
+    d2rq:join "protein_chemical_links.organism = organisms.id";
+	d2rq:uriPattern "organisms/@@organisms.name|urlify@@";
+	.
+	
+map:chemicalInteractions a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "interactions/@@chemical_links.chemical1|urlify@@_@@chemical_links.chemical2|urlify@@";
+	d2rq:class stitch:chemicalInteractions;
+	d2rq:classDefinitionLabel "interactions";
+	.
+
+map:chemicalInteractions__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalInteractions;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@chemical_links.chemical1@@ @@chemical_links.chemical2@@";
+	.
+
+map:chemicalInteraction_score a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalInteractions;
+	d2rq:property stitch:score;
+	d2rq:column "chemical_links.textmining";
+	.
+
+map:interaction_chemical1 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalInteractions;
+	d2rq:property stitch:chemical;
+	d2rq:uriPattern "chemicals/@@chemical_links.chemical1|urlify@@";
+	.
+
+map:interaction_chemical2 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:chemicalInteractions;
+	d2rq:property stitch:chemical;
+	d2rq:uriPattern "chemicals/@@chemical_links.chemical2|urlify@@";
+	.
+
+
+# Table organisms
+map:organisms a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "organisms/@@organisms.name|urlify@@";
+	d2rq:class stitch:organisms;
+	d2rq:classDefinitionLabel "organisms";
+	.
+	
+map:organisms__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:organisms;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@organisms.name@@";
+	.
+
+map:organisms_ncbi a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:organisms;
+	d2rq:property stitch:ncbiId;
+	d2rq:column "organisms.id";
+.
+
+map:silkDbpediaSpeciesLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:organisms;
+	d2rq:property owl:sameAs;
+    d2rq:join "dbpedia_stitch_species.stitch = organisms.urlname";
+	d2rq:uriPattern "http://www.dbpedia.org/resource/@@dbpedia_stitch_species.dbpedia@@";
+	.
+
+	
