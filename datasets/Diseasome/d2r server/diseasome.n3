@@ -212,3 +212,17 @@ map:silkSiderDiseaseLink a d2rq:PropertyBridge;
     d2rq:join "diseasome_sider_diseases.diseasome = diseases.id";
 	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/sider/resource/side_effects/@@diseasome_sider_diseases.sider@@";
 	.
+	
+map:silkDbpediaDiseasomeLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property owl:sameAs;
+    d2rq:join "dbpedia_diseasome_diseases.diseasome = diseases.id";
+	d2rq:uriPattern "http://www.dbpedia.org/resource/@@dbpedia_diseasome_diseases.dbpedia@@";
+	.
+
+map:silkLinkedCTCondition a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:diseases;
+	d2rq:property owl:sameAs;
+    d2rq:join "linkedct_diseasome_diseases.diseasome = diseases.id";
+	d2rq:uriPattern "http://data.linkedct.org/resource/condition/@@linkedct_diseasome_diseases.linkedct@@";
+.
