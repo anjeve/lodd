@@ -131,7 +131,7 @@ if ($dir=opendir($path)) {
 	closedir($dir);
 }
 
-if (start == 0) {
+if ($start == 0) {
 	mysql_query ("drop table ".$database_table_drugs.";");
 }
 
@@ -155,7 +155,7 @@ foreach ($seperate_tables as $name => $seperate_db) {
 	if (!is_array($seperate_db)) {
 		$name = $seperate_db;
 	}
-	if (start == 0) {
+	if ($start == 0) {
 		mysql_query ("drop table ".$name.";");
 	}
 	$sql_query = "CREATE TABLE IF NOT EXISTS ".$name." (
