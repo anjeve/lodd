@@ -53,7 +53,8 @@ map:siderDrugLink a d2rq:PropertyBridge;
 map:stitchDrugLink a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
 	d2rq:property foaf:page;
-	d2rq:uriPattern "http://stitch.embl.de/cgi/show_network_section.pl?identifier=-@@drugs.sider_drug_id@@&input_query_species=9606";
+    d2rq:join "label_mapping.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriPattern "http://stitch.embl.de/cgi/show_network_section.pl?identifier=-@@label_mapping.stitch_id@@&input_query_species=9606";
 	.
 map:drugs_name a d2rq:PropertyBridge;
 	d2rq:belongsToClassMap map:drugs;
@@ -118,6 +119,13 @@ map:label_mapping_stitch_id a d2rq:PropertyBridge;
 	d2rq:propertyDefinitionLabel "label_mapping stitch_id";
     d2rq:join "label_mapping.sider_drug_id = drugs.sider_drug_id";
 	d2rq:column "label_mapping.stitch_id";
+	.
+
+map:stitchDrugSameAsLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "label_mapping.sider_drug_id = drugs.sider_drug_id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/stitch/resource/chemicals/@@label_mapping.stitch_id@@";
 	.
 
 	
@@ -210,4 +218,25 @@ map:silkTCMDiseaseLink a d2rq:PropertyBridge;
 	d2rq:property owl:sameAs;
     d2rq:join "sider_tcm_diseases.sider = side_effects.sideeffect_id";
 	d2rq:uriPattern "http://purl.org/net/tcm/tcm.lifescience.ntu.edu.tw/id/disease/@@sider_tcm_diseases.tcm@@";
+	.
+	
+map:silkDbpediaDiseaseLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:side_effects;
+	d2rq:property owl:sameAs;
+    d2rq:join "dbpedia_sider_diseases.sider = side_effects.sideeffect_id";
+	d2rq:uriPattern "http://www.dbpedia.org/resource/@@dbpedia_sider_diseases.dbpedia@@";
+	.
+	
+map:silkDailymedDrugLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "sider_dailymed_drugs.sider = drugs.sider_drug_id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/dailymed/resource/drugs/@@sider_dailymed_drugs.dailymed@@";
+	.
+
+map:silkDrugbankDrugLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "sider_drugbank_drugs.sider = drugs.sider_drug_id";
+	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugs/@@sider_drugbank_drugs.drugbank@@";
 	.
