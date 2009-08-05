@@ -50,12 +50,9 @@ $liness = 0;
 $fields = array();
 
 while (!feof($file_handle)) {
-//while ($liness < 500) {
-	//$liness = $liness+1;
 	$line = trim(fgets($file_handle));
 
-	// TODO: Not Available
-
+	// TODO: "Not Available"
 	if (preg_match("/#BEGIN_DRUGCARD (DB[0-9]*)/i", $line, $match)) {
 		$drugcard_nr = $match[1];
 		echo $drugcard_nr."\n";
