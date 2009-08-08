@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * LODD configuration
+ *
+ * Please fill out information and 
+ * move file to config.php.
+ *
+ */
+
+// LODD database configuration
+
+	$host = '';	// in most of the cases 'localhost'
+	$user = '';	// database user
+	$password = '';	// database user password
+
+// LODD Silk configuration
+
+	$silk_path = "";	// path to Silk generated mappings
+
+?>
