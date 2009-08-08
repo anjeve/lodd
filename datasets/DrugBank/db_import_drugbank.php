@@ -8,7 +8,7 @@
 
 require_once("../scripts/lodd_utils.php");
 
-$file = "drugbank_drugcards.txt";
+$file = "dataset/drugbank_drugcards.txt";
 
 $foaf_pages = array("","");
 
@@ -25,7 +25,14 @@ $enzymes_seperate_dbs = array();
 $drugbankLink_fields = array("contraindicationInsert", "interactionInsert", "patientInformationInsert", "msdsFiles");
 
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
-mysql_select_db ("lodd");
+mysql_select_db ($database_drugbank);
+if (!mysql_select_db ($database_drugbank)) {
+	$sql_query = "CREATE DATABASE $database_drugbank";
+	if (!mysql_query ($sql_query)) {
+		die(mysql_error() . " - query: ".$sql_query);
+	}
+	mysql_select_db ($database_drugbank) or die("Database selection could not be established.");
+}
 
 $database_name = "drugs";
 $database_name_targets = "targets";
@@ -41,9 +48,8 @@ $drug_target_links = array();
 $drug_enzyme_links = array();
 
 $file_handle = fopen($file, "r");
-
 if (!$file_handle) {
-	die ("File not found ".$file);
+	die ("DrugBank dump not found: ".$file);
 }
 
 $liness = 0;

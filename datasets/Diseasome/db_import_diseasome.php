@@ -10,21 +10,26 @@ require_once("../scripts/lodd_utils.php");
 
 $seperate_dbs = array("diseaseGenes");
 
-$database_drugbank = "lodd";
-$database_diseasome = "lodd_diseasome";
+$file_s2 = "supplementary_tableS2.txt";
+$file = "supplementary_tableS1.txt";
+$file_hgnc = "hgnc.n3";
+
+$database_disease = "diseases";
+$database_disease_genes = "disease_genes";
+$database_drug_targets = "drug_targets";
 
 $database_drugbank_table_drug_targets = "drug_targets";
 $database_drugbank_table_targets = "targets";
 
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
 mysql_select_db ($database_diseasome);
-
-$file_s2 = "supplementary_tableS2.txt";
-$file = "supplementary_tableS1.txt";
-$file_hgnc = "hgnc.n3";
-$database_disease = "diseases";
-$database_disease_genes = "disease_genes";
-$database_drug_targets = "drug_targets";
+if (!mysql_select_db ($database_diseasome)) {
+	$sql_query = "CREATE DATABASE $database_diseasome";
+	if (!mysql_query ($sql_query)) {
+		die(mysql_error() . " - query: ".$sql_query);
+	}
+	mysql_select_db ($database_diseasome) or die("Database selection could not be established.");
+}
 
 $genes = array();
 

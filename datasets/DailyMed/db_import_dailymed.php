@@ -102,6 +102,13 @@ $seperate_tables = array(
 
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
 mysql_select_db ($database_dailymed);
+if (!mysql_select_db ($database_dailymed)) {
+	$sql_query = "CREATE DATABASE $database_dailymed";
+	if (!mysql_query ($sql_query)) {
+		die(mysql_error() . " - query: ".$sql_query);
+	}
+	mysql_select_db ($database_dailymed) or die("Database selection could not be established.");
+}
 
 $database_drugbank_table_drugs = "drugs";
 $database_drugbank_table_brandnames = "brandnames";

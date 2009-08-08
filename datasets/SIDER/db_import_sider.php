@@ -8,15 +8,18 @@
 
 require_once("../scripts/lodd_utils.php");
 
-$database_sider = "lodd_sider";
-
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
 mysql_select_db ($database_sider);
+if (!mysql_select_db ($database_sider)) {
+	$sql_query = "CREATE DATABASE $database_sider";
+	if (!mysql_query ($sql_query)) {
+		die(mysql_error() . " - query: ".$sql_query);
+	}
+	mysql_select_db ($database_sider) or die("Database selection could not be established.");
+}
 
 $file_label_mapping = "label_mapping.tsv/label_mapping.tsv";
 $table_label_mapping = "label_mapping";
-//TEST
-//$file_label_mapping = "label_mapping.tsv/label_mapping_test.tsv";
 
 $file_euphoria_adverse_effects = "euphoria_adverse_effects.tsv/euphoria_adverse_effects.tsv";
 $table_euphoria_adverse_effects = "euphoria_adverse_effects";
@@ -62,43 +65,6 @@ function getStitchId($sider_id) {
 	}
 
 }
-//STITCH
-
-/*
-$file_stitch_chemical_aliases = "STITCH/chemical.aliases.v1.0.tsv";
-$table_stitch_chemical_aliases = "stitch_chemical_aliases";
-
-$file_handle = fopen($file_stitch_chemical_aliases, "r");
-if (!$file_handle) {
-	die ("File not found ".$file_stitch_chemical_aliases);
-}
-
-$sql_query = "TRUNCATE TABLE ".$table_stitch_chemical_aliases;
-if (!mysql_query ($sql_query)) {
-	die("[DIE] ". mysql_error() . " - query: ".$sql_query);
-}
-
-while (!feof($file_handle)) {
-	$line = trim(fgets($file_handle));
-	$line_parts = explode("\t", $line);
-	if ($line_parts[0] != "chemical") {
-		$data["sideeffect_id"] = str_replace("'", "\'", trim($line_parts[0]));
-		//trim(str_replace("\\'", "\'", str_replace("'", "\'",	, "\"")
-		$data["alias"] = str_replace("\"", "", trim($line_parts[1]));
-	
-		$sql_query = "INSERT INTO ".$table_stitch_chemical_aliases." (sideeffect_id, alias) 
-			VALUES ('".$data["sideeffect_id"]."', \"".$data["alias"]."\");";
-		if (!mysql_query ($sql_query)) {
-			if (strpos(mysql_error(), "Duplicate entry") === false) {
-				die("[DIE] ". mysql_error() . " - query: ".$sql_query);
-			}
-		}
-	}
-}
-
-fclose($file_handle);
-
-*/
 
 $labels_for_sider_drug_id = array();
 
@@ -114,8 +80,6 @@ while (!feof($file_handle)) {
 	$line_parts = explode("\t", $line);
 	$data[]["name"] = str_replace("'", "\'", trim($line_parts[0]));
 	$data[sizeof($data)-1]["ingredients"] = str_replace("'", "\'", trim($line_parts[1]));
-	
-	//TODO: ok so?
 	
 	if ((strlen($data[sizeof($data)-1]["name"]) == 0) && (strlen($data[sizeof($data)-1]["ingredients"]) > 0)) {
 		$data[sizeof($data)-1]["name"] = $data[sizeof($data)-1]["ingredients"];
