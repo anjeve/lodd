@@ -240,3 +240,10 @@ map:silkDrugbankDrugLink a d2rq:PropertyBridge;
     d2rq:join "sider_drugbank_drugs.sider = drugs.sider_drug_id";
 	d2rq:uriPattern "http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugs/@@sider_drugbank_drugs.drugbank@@";
 	.
+	
+map:silkDDBpediaDrugLink a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:drugs;
+	d2rq:property owl:sameAs;
+    d2rq:join "dbpedia_sider_drugs.sider = drugs.sider_drug_id";
+	d2rq:uriPattern "http://www.dbpedia.org/resource/@@dbpedia_sider_drugs.dbpedia@@";
+	.
