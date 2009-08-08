@@ -10,8 +10,9 @@
 $lodd_datasets = array("diseasome", "dailymed", "drugbank", "sider", "stitch");
 
 $database_dailymed = "lodd_dailymed";
-$database_drugbank = "lodd";
+$database_drugbank = "lodd_drugbank";
 $database_diseasome = "lodd_diseasome";
+$database_sider = "lodd_sider";
 
 require_once("../config/config.php");
 
@@ -179,7 +180,6 @@ function camelCase($text) {
  * @param string $haystack
  * @return string
  */
-
 function str_replace_once($needle, $replace, $haystack) { 
    $pos = strpos($haystack, $needle); 
    if ($pos === false) { 
@@ -187,6 +187,100 @@ function str_replace_once($needle, $replace, $haystack) {
        return $haystack; 
    } 
    return substr_replace($haystack, $replace, $pos, strlen($needle)); 
+}
+
+function getXmlFields($searchString, $level = false) {
+	global $fields;
+	global $xmlDrugFile;
+	global $errors;
+	
+	$searchString = str_replace("_", " ", $searchString);
+	$searchpath = array_searchRecursive($searchString, $xmlDrugFile->data[0]);
+	if ($searchpath !== false ) {
+		$subarray = $xmlDrugFile->data[0];
+		if ($level == "-1") {
+			$searchDepth = sizeof($searchpath)-3;
+		} else {
+			$searchDepth = sizeof($searchpath)-2;
+		}
+		for ($i = 0; $i < $searchDepth; $i = $i+1) {
+			$subarray = $subarray[$searchpath[$i]];
+		}
+		$i = $searchpath[$i]+1;
+		for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
+			if ($subarray[$k]["name"] == "TITLE") {
+				getXmlContent($subarray[$k]["content"], ":");
+			} else if ($subarray[$k]["name"] == "TEXT") {
+				$subsubarray = $subarray[$k]["child"];
+				for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+					if ($subsubarray[$j]["name"] == "PARAGRAPH") {
+						getXmlContent($subsubarray[$j]["content"]);
+					} else {
+						$errors[$file] .= " $searchString";
+					}
+				}
+			} else if ($subarray[$k]["name"] == "COMPONENT") {
+				$subsubarray = $subarray[$k]["child"];
+				for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
+					if ($subsubarray[$j]["name"] == "SECTION") {
+						for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
+							$temp = $subsubarray[$j]["child"][$l];
+							if ($temp["name"] == "TITLE") {
+								getXmlContent($temp["content"], ":");
+							} else if ($temp["name"] == "TEXT") {
+								for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
+									if ($temp["child"][$m]["name"] == "PARAGRAPH") {
+										getXmlContent($temp["child"][$m]["content"]);
+									}
+								}
+							}  else if ($temp["name"] == "COMPONENT") {
+								for ($n = 0; $n < sizeof($temp["child"]); $n = $n + 1) {
+									$temp1 = $temp["child"][$n];
+									if ($temp1["name"] == "SECTION") {
+										for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
+											$temp2 = $temp1["child"][$o];
+											if ($temp2["name"] == "TITLE") {
+												getXmlContent($temp2["content"], ":");
+											} else if ($temp2["name"] == "TEXT") {
+												for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
+													if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
+														getXmlContent($temp2["child"][$m]["content"]);
+													}
+												}
+											}
+										}
+									} else {
+										$errors[$file] .= " $searchString";
+									}
+								}
+							}
+						}
+					} else {
+						$errors[$file] .= " $searchString";
+					}
+				}
+			}				
+		}
+	}
+}
+function getXmlContent($array, $divider = false) {
+	global $fields;
+
+	if ($array) {
+		$content = $array;
+		if ($divider) {
+			$content .= $divider;
+		}
+		if (sizeof($fields) > 0) {
+			if (!$divider) {
+				$fields[sizeof($fields)-1] .= " $content";
+			} else {
+				$fields[sizeof($fields)-1] .= "<br/>$content";
+			}
+		} else {
+			$fields[] = $content;
+		}
+	}
 }
 
 ?>
