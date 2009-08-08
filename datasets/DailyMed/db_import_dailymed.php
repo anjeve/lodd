@@ -6,6 +6,9 @@
 * @author	Anja Jentzsch <mail@anjajentzsch.de>
 */
 
+require_once("../scripts/lodd_utils.php");
+
+// get start and end index
 if(is_numeric($argv[1])) {
 	$start = (int) $argv[1];
 }
@@ -13,102 +16,85 @@ if(is_numeric($argv[2])) {
 	$end = (int) $argv[2];
 }
 
-function getFields($searchString, $level = false) {
-	global $fields;
-	global $xmlDrugFile;
-	global $errors;
-	
-	$searchString = str_replace("_", " ", $searchString);
-	$searchpath = array_searchRecursive($searchString, $xmlDrugFile->data[0]);
-	if ($searchpath !== false ) {
-		$subarray = $xmlDrugFile->data[0];
-		if ($level == "-1") {
-			$searchDepth = sizeof($searchpath)-3;
-		} else {
-			$searchDepth = sizeof($searchpath)-2;
+function repairXml() {
+	$path = "dataset/";
+	$path_repaired = "dataset/repaired/";
+	if ($dir=opendir($path)) {
+		if (!opendir($path_repaired)) {
+			mkdir($path_repaired);
 		}
-		for ($i = 0; $i < $searchDepth; $i = $i+1) {
-			$subarray = $subarray[$searchpath[$i]];
-		}
-		$i = $searchpath[$i]+1;
-		for ($k = $i; $k < sizeof($subarray); $k=$k+1) {
-			if ($subarray[$k]["name"] == "TITLE") {
-				getXmlContent($subarray[$k]["content"], ":");
-			} else if ($subarray[$k]["name"] == "TEXT") {
-				$subsubarray = $subarray[$k]["child"];
-				for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
-					if ($subsubarray[$j]["name"] == "PARAGRAPH") {
-						getXmlContent($subsubarray[$j]["content"]);
-					} else {
-						$errors[$file] .= " $searchString";
-					}
+		while($file=readdir($dir)) {
+			if (!is_dir($file) && (strpos($file,".xml") !== false)) {
+				$file_handle = fopen($path.$file, "r");
+				$file_handle1 = fopen($path_repaired.$file, "w");
+				if (!$file_handle) {
+					die ("File not found ".$file);
 				}
-			} else if ($subarray[$k]["name"] == "COMPONENT") {
-				$subsubarray = $subarray[$k]["child"];
-				for ($j = 0; $j < sizeof($subsubarray); $j=$j+1) { 
-					if ($subsubarray[$j]["name"] == "SECTION") {
-						for ($l = 0; $l < sizeof($subsubarray[$j]["child"]); $l=$l+1) { 
-							$temp = $subsubarray[$j]["child"][$l];
-							if ($temp["name"] == "TITLE") {
-								getXmlContent($temp["content"], ":");
-							} else if ($temp["name"] == "TEXT") {
-								for ($m = 0; $m < sizeof($temp["child"]); $m = $m + 1) {
-									if ($temp["child"][$m]["name"] == "PARAGRAPH") {
-										getXmlContent($temp["child"][$m]["content"]);
-									}
-								}
-							}  else if ($temp["name"] == "COMPONENT") {
-								for ($n = 0; $n < sizeof($temp["child"]); $n = $n + 1) {
-									$temp1 = $temp["child"][$n];
-									if ($temp1["name"] == "SECTION") {
-										for ($o = 0; $o < sizeof($temp1["child"]); $o = $o+1) { 
-											$temp2 = $temp1["child"][$o];
-											if ($temp2["name"] == "TITLE") {
-												getXmlContent($temp2["content"], ":");
-											} else if ($temp2["name"] == "TEXT") {
-												for ($m = 0; $m < sizeof($temp2["child"]); $m = $m + 1) {
-													if ($temp2["child"][$m]["name"] == "PARAGRAPH") {
-														getXmlContent($temp2["child"][$m]["content"]);
-													}
-												}
-											}
-										}
-									} else {
-										$errors[$file] .= " $searchString";
+				$lines = "";
+				$line_nr = 0;
+				while (!feof($file_handle)) {
+					$line_nr = $line_nr + 1;
+					$line = trim(fgets($file_handle));
+					
+					$line = str_replace("&#160;", " ", $line);
+					$line = str_replace("&#174;", "'", $line);
+					$line = str_replace("&#8217;", "'", $line);
+					$line = str_replace("<sup>'</sup>", "", $line);
+					
+					if (preg_match_all("/\(.*?\)/", $line, $match)) {
+						foreach ($match[0] as $match_id => $matched) {
+							$str1 = strpos($matched, "(", 1);
+							$str2 = strpos($matched, ")");
+							if (substr_count($matched, "(") - substr_count($matched, ")") != 0 || ($str1 > $str2)) {
+								unset($match[0][$match_id]);
+							}
+						}					
+						foreach ($match[0] as $matched) {
+							if (strpos($matched, "<linkHtml") !== false) {
+								$countWords = count(explode(" ", $matched)); 
+								if ($countWords >= 2) {
+									$matched_temp = $matched;
+									$matched_temp = preg_replace("/<content[^>]*>/", "", $matched_temp);
+									$matched_temp = preg_replace("/<\/content>/", "", $matched_temp);
+									$matched_temp = preg_replace("/<linkHtml[^>]*>/", "", $matched_temp);
+									$matched_temp = preg_replace("/<\/linkHtml>/", "", $matched_temp);
+	
+									preg_match_all("/[A-Z]/", $matched_temp, $your_match);
+									$total_upper_case_count = count($your_match[0]);
+									if ($total_upper_case_count > ($countWords+1)) {
+										$line = str_replace($matched, "", $line);
 									}
 								}
 							}
 						}
-					} else {
-						$errors[$file] .= " $searchString";
-					}
+					}				
+					
+				//2. content-tags in paragraph tags entfernen
+					$line = preg_replace("/<content[^>]*>/", "", $line);
+					$line = preg_replace("/<\/content>/", "", $line);
+					$line = preg_replace("/<linkHtml[^>]*>/", "", $line);
+					$line = preg_replace("/<\/linkHtml>/", "", $line);
+
+					$lines .= $line."\n";
 				}
-			}				
-		}
-	}
-}
-
-function getXmlContent($array, $divider = false) {
-	global $fields;
-
-	if ($array) {
-		$content = $array;
-		if ($divider) {
-			$content .= $divider;
-		}
-		if (sizeof($fields) > 0) {
-			if (!$divider) {
-				$fields[sizeof($fields)-1] .= " $content";
-			} else {
-				$fields[sizeof($fields)-1] .= "<br/>$content";
+				if ($lines != "") {
+					if (!fwrite($file_handle1,$lines)) {
+						die ($file);
+					}
+				} else {
+					echo " error: $file\n";
+				}
 			}
-		} else {
-			$fields[] = $content;
 		}
+		closedir($dir);
+	} else {
+		die ("Couldn't find DailyMed dump path at: $path");
 	}
 }
 
-require_once("../scripts/lodd_utils.php");
+if (!$start || ($start <= 1)) {
+	repairXml();
+}
 
 $database_table_drugs = "drugs";
 $seperate_tables = array(
@@ -121,14 +107,19 @@ $database_drugbank_table_drugs = "drugs";
 $database_drugbank_table_brandnames = "brandnames";
 $database_drugbank_table_synonyms = "synonyms";
 
-$path = "dataset/1";
-if ($dir=opendir($path)) {
+$path = "dataset/repaired";
+if ($dir = opendir($path)) {
 	while($file=readdir($dir)) {
 		if (!is_dir($file) && (strpos($file,".xml") !== false)) {
 			$files[] = $file;
 		}
 	}
+	if (sizeof($files) == 0) {
+		die ("No DailyMed files found.\nPlease download DailyMed dumps from ftp://public.nlm.nih.gov/nlmdata/.dailymed/dm_spl_release.zip and extract the zip file at: $path");
+	}
 	closedir($dir);
+} else {
+	die ("Couldn't find DailyMed dump path at: $path");
 }
 
 if ($start == 0) {
@@ -377,7 +368,7 @@ foreach ($files as $file) {
 				}
 			} else if ($seperate_table =="boxed_warning") {
 				// BOXED WARNING SECTION
-				getFields("BOXED WARNING SECTION", "-1");
+				getXmlFields("BOXED WARNING SECTION", "-1");
 			} else if (($seperate_table == "overdosage") ||
 				($seperate_table == "warnings") ||
 				($seperate_table == "precautions") ||
@@ -389,7 +380,7 @@ foreach ($files as $file) {
 				($seperate_table == "clinical_pharmacology") ||
 				($seperate_table == "supplemental_patient_material") ||
 				($seperate_table == "dosage_and_administration")) {
-				getFields($seperate_table);
+				getXmlFields($seperate_table);
 			}
 
 
@@ -448,6 +439,26 @@ foreach ($files as $file) {
 					}
 				}
 			}
+		}
+	}
+}
+
+// CREATE ORGANIZATION TABLE
+$table_dailymed_organizations = "organizations";
+
+$query = 'SELECT id, representedOrganization FROM '.$database_table_drugs.' where representedOrganization IS NOT NULL';
+$result = mysql_query($query);
+while ($row = mysql_fetch_row($result)) {
+	$query = 'SELECT id, name FROM '.$table_dailymed_organizations.' where name = "'.$row[1].'"';
+	$result1 = mysql_query($query);
+	if (mysql_num_rows($result1) > 1) {
+		die("[DIE] duplicate entry - query: ".$query);
+	}
+	while ($row1 = mysql_fetch_row($result1)) {
+		$query = 'UPDATE '.$database_table_drugs.' SET representedOrganization = "'.$row1[0].'" where id = "'.$row[0].'"';
+		$result2 = mysql_query($query);
+		if (!$result2) {
+			die("[DIE] query: ".$query);
 		}
 	}
 }
