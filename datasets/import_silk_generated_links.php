@@ -6,32 +6,41 @@
 * @author	Anja Jentzsch <mail@anjajentzsch.de>
 */
 
-$fu_lodd_datasets = array("diseasome", "dailymed", "drugbank", "sider", "stitch");
-
 $database_linking = "lodd_linking";
 
 require_once("../scripts/lodd_utils.php");
 
 mysql_connect ($host, $user, $password) or die ("Database connection could not be established.");
-mysql_select_db ($database_linking);
+if (!mysql_select_db ($database_linking)) {
+	$sql_query = "CREATE DATABASE $database_linking";
+	if (!mysql_query ($sql_query)) {
+		die(mysql_error() . " - query: ".$sql_query);
+	}
+	mysql_select_db ($database_linking) or die("Database selection could not be established.");
+}
 
 mysql_query ("drop table ".$database_sider_table_dbpedia.";");
 
-$path = "c:/projects/silk/";
-if ($dir=opendir($path)) {
+if ($dir=opendir($silk_path)) {
 	while($file=readdir($dir)) {
 		if (!is_dir($file) && (strpos($file,"accepted_links") !== false)) {
 			$file_parts = split ("_", $file);
-			if (sizeof(array_intersect($file_parts, $fu_lodd_datasets))> 0) {
+			if (sizeof(array_intersect($file_parts, $lodd_datasets))> 0) {
 				$files[] = $file;
 			}
 		}
 	}
 	closedir($dir);
+} else {
+	if (!$silk_path) {
+		die ("Please define Silk path in your config/config.php.");
+	} else {
+		die ("Can't find defined Silk path: $silk_path");
+	}
 }
 
 foreach ($files as $file) {
-	$file_handle = fopen($path.$file, "r");
+	$file_handle = fopen($silk_path.$file, "r");
 	if (!$file_handle) {
 		die ("File not found ".$file);
 	}

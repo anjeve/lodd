@@ -7,11 +7,13 @@
  * @author	Anja Jentzsch <mail@anjajentzsch.de>
  */
 
+$lodd_datasets = array("diseasome", "dailymed", "drugbank", "sider", "stitch");
+
 $database_dailymed = "lodd_dailymed";
 $database_drugbank = "lodd";
 $database_diseasome = "lodd_diseasome";
 
-require_once("../config/databaseconfig.php");
+require_once("../config/config.php");
 
 $parent_subtree = array();
 
