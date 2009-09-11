@@ -1,0 +1,771 @@
+@prefix drugbank: <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix d2r: <http://sites.wiwiss.fu-berlin.de/suhl/bizer/d2r-server/config.rdf#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dbpedia: <http://dbpedia.org/ontology/> .
+@prefix dailymed: <http://www4.wiwiss.fu-berlin.de/dailymed/resource/dailymed/> .
+@prefix diseasome: <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/> .
+@prefix vocabClass: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/class/> .
+@prefix vocabProperty: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/property/> .
+
+drugbank:drug_interactions a rdfs:Class;
+	rdfs:label "drug interaction"@en;
+.
+
+drugbank:drugs a rdfs:Class;
+	rdfs:label "drug"@en;
+.
+
+drugbank:enzymes a rdfs:Class;
+	rdfs:label "enzyme"@en;
+.
+
+drugbank:targets a rdfs:Class;
+	rdfs:label "drug target"@en;
+.
+
+drugbank:references a rdfs:Class;
+	rdfs:label "reference"@en;
+.
+
+drugbank:target a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range drugbank:targets;
+	rdfs:label "target"@en;
+.
+
+drugbank:enzyme a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range drugbank:enzymes;
+	rdfs:label "enzyme"@en;
+.
+
+drugbank:ahfsCode a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "AHFS code"@en;
+.
+
+drugbank:atcCode a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "ATC code"@en;
+.
+
+drugbank:brandMixture a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "brand mixture"@en;
+.
+
+drugbank:brandName a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "name"@en;
+.
+
+drugbank:dosageForm a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range drugbank:dosageforms;
+	rdfs:label "dosage form"@en;
+.
+
+drugbank:interactionDrug1 a rdf:Property;
+	rdfs:domain drugbank:drug_interactions;
+	rdfs:range drugbank:drugs;
+	rdfs:label "drug"@en;
+.
+
+drugbank:interactionDrug2 a rdf:Property;
+	rdfs:domain drugbank:drug_interactions;
+	rdfs:range drugbank:drugs;
+	rdfs:label "drug"@en;
+.
+
+drugbank:text a rdf:Property;
+	rdfs:domain drugbank:drug_interactions;
+	rdfs:range xsd:string;
+	rdfs:label "text"@en;
+.
+
+drugbank:drugCategory a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range drugbank:drugcategory;
+	rdfs:label "drug category"@en;
+.
+
+drugbank:drugType a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range drugbank:drugtype;
+	rdfs:label "drug type"@en;
+.
+
+drugbank:reference a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "reference"@en;
+.
+
+drugbank:absorption a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "absorption"@en;
+.
+
+drugbank:biotransformation a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "biotransformation"@en;
+.
+
+drugbank:casRegistryNumber a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "CAS Registry number"@en;
+.
+
+drugbank:chebiId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "ChEBI ID"@en;
+.
+
+drugbank:chemicalFormula a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "chemical formula"@en;
+.
+
+drugbank:chemicalIupacName a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "chemical IUPAC name"@en;
+.
+
+drugbank:chemicalStructure a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "chemical structure"@en;
+.
+
+drugbank:creationDate a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "creation date"@en;
+.
+
+drugbank:dpdDrugIdNumber a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "Drug ID Number"@en;
+.
+
+drugbank:drugIdNumberPage a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "Drug ID Number page"@en;
+.
+
+drugbank:description a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "description"@en;
+.
+
+drugbank:drugInteractions a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "interaction"@en;
+.
+
+drugbank:experimentalCaco2Permeability a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "experimental Caco2 permeability"@en;
+.
+
+drugbank:experimentalLogpHydrophobicity a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "experimental LogP/Hphobicity"@en;
+.
+
+drugbank:experimentalLogs a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "experimental LogS"@en;
+.
+
+drugbank:experimentalWaterSolubility a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "experimental water solubility"@en;
+.
+
+drugbank:fdaLabelFiles a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "FDA label"@en;
+.
+
+drugbank:genbankId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "GenBank ID"@en;
+.
+
+drugbank:genericName a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "generic name"@en;
+.
+
+drugbank:hetId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "HET ID"@en;
+.
+
+drugbank:halfLife a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "half life"@en;
+.
+
+drugbank:inchiIdentifier a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "INCHI ID"@en;
+.
+
+drugbank:inchiKey a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "INCHI key"@en;
+.
+
+drugbank:indication a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "indication"@en;
+.
+
+drugbank:keggCompoundId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "KEGG Compound ID"@en;
+.
+
+drugbank:keggDrugId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "KEGG Drug ID"@en;
+.
+
+drugbank:limsDrugId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "LIMS Drug ID"@en;
+.
+
+drugbank:msdsFiles a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "MSDS Material Safety Sheet"@en;
+.
+
+drugbank:massSpecFile a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "EI Mass Spectrum "@en;
+.
+
+drugbank:mechanismOfAction a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "mechanism of action"@en;
+.
+
+drugbank:meltingPoint a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "mechanism of action"@en;
+.
+
+drugbank:molecularWeightAverage a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "average molecular weight"@en;
+.
+
+drugbank:molecularWeightMono a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "monoisotopic molecular weight"@en;
+.
+
+drugbank:pdbExperimentalId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "PDB ID"@en;
+.
+
+drugbank:pdbHomologyId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "PDB Homology ID"@en;
+.
+
+drugbank:pdrhealthLink a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "PDRhealth link"@en;
+.
+
+drugbank:pharmgkbId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "PharmGKB ID"@en;
+.
+
+drugbank:pharmacology a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "pharmacology"@en;
+.
+
+drugbank:predictedLogpHydrophobicity a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "predicted LogP/Hydrophobicity"@en;
+.
+
+drugbank:predictedLogs a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "predicted LogS"@en;
+.
+
+drugbank:predictedWaterSolubility a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "predicted water solubility"@en;
+.
+
+drugbank:primaryAccessionNo a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "Primary Accession Number"@en;
+.
+
+drugbank:proteinBinding a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "protein binding"@en;
+.
+
+drugbank:pubchemCompoundId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "PubChem Compound ID"@en;
+.
+
+drugbank:pubchemSubstanceId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "PubChem Substance ID"@en;
+.
+
+drugbank:rxlistLink a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "RxList link"@en;
+.
+
+drugbank:smilesStringCanonical a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "canonical SMILES string"@en;
+.
+
+drugbank:smilesStringIsomeric a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "isomeric SMILES string"@en;
+.
+
+drugbank:state a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "physical state"@en;
+.
+
+drugbank:structure a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "structure"@en;
+.
+
+drugbank:swissprotId a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	.
+
+drugbank:swissprotPage a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "SwissProt page"@en;
+.
+
+drugbank:swissprotName a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "SwissProt name"@en;
+.
+
+drugbank:synthesisReference a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "synthesis reference"@en;
+.
+
+drugbank:toxicity a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "toxicity"@en;
+.
+
+drugbank:updateDate a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "update date"@en;
+.
+
+drugbank:contraindicationInsert a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "contraindication"@en;
+.
+
+drugbank:interactionInsert a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "interaction"@en;
+.
+
+drugbank:pkaIsoelectricPoint a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "pKa/Isoelectric point"@en;
+.
+
+drugbank:patientInformationInsert a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "patient information"@en;
+.
+
+drugbank:cellularLocation a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "cellular location"@en;
+.
+
+drugbank:drugReference a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range drugbank:references;
+	rdfs:label "drug reference"@en;
+.
+
+drugbank:generalReference a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range drugbank:references;
+	rdfs:label "general reference"@en;
+.
+
+drugbank:goClassificationComponent a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "GO classification"@en;
+.
+
+drugbank:goClassificationFunction a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "GO classification function"@en;
+.
+
+drugbank:goClassificationProcess a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "GO classification process"@en;
+.
+
+drugbank:pfamDomainFunction a rdf:Property;
+	rdfs:domain drugbank:targets;
+	.
+
+drugbank:pfamDomainFunctionPage a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "PFAM domain function page"@en;
+.
+
+drugbank:signal a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "signal"@en;
+.
+
+drugbank:synonym a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "synonym"@en;
+.
+
+drugbank:transmembraneRegions a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "transmembrane regions"@en;
+.
+
+drugbank:geneName a rdf:Property;
+	rdfs:domain drugbank:enzymes;
+	rdfs:range xsd:string;
+	rdfs:label "gene name"@en;
+.
+
+drugbank:name a rdf:Property;
+	rdfs:domain drugbank:enzymes;
+	rdfs:range xsd:string;
+	rdfs:label "name"@en;
+.
+
+drugbank:proteinSequence a rdf:Property;
+	rdfs:domain drugbank:enzymes;
+	rdfs:range xsd:string;
+	rdfs:label "protein sequence"@en;
+.
+
+drugbank:swissprotId a rdf:Property;
+	rdfs:domain drugbank:enzymes;
+	.
+
+drugbank:swissprotPage a rdf:Property;
+	rdfs:domain drugbank:enzymes;
+	rdfs:range xsd:anyURI;
+	rdfs:label "SwissProt page"@en;
+.
+
+drugbank:foodInteraction a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "food interaction"@en;
+.
+
+drugbank:affectedOrganism a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "affected organism"@en;
+.
+
+drugbank:secondaryAccessionNumber a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "Secondary Accession Number"@en;
+.
+
+drugbank:synonym a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:string;
+	rdfs:label "synonym"@en;
+.
+
+drugbank:chromosomeLocation a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "chromosome location"@en;
+.
+
+drugbank:essentiality a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "essentiality"@en;
+.
+
+drugbank:genatlasId a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "GenAtlas ID"@en;
+.
+
+drugbank:genbankIdGene a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "GenBank ID Gene"@en;
+.
+
+drugbank:genbankIdGenePage a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "GenBank ID Gene page"@en;
+.
+
+drugbank:genbankIdProtein a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "GenBank ID Protein"@en;
+.
+
+drugbank:genbankIdProteinPage a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "GenBank ID Protein page"@en;
+.
+
+drugbank:genecardId a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "GeneCard ID"@en;
+.
+
+drugbank:bio2rdfSymbol a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "Bio2RDF symbol"@en;
+.
+
+drugbank:geneName a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "gene name"@en;
+.
+
+drugbank:geneSequence a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "gene sequence"@en;
+.
+
+drugbank:generalFunction a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "general function"@en;
+.
+
+drugbank:hgncId a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "HGNC ID"@en;
+.
+
+drugbank:hgncIdPage a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "HGNC ID page"@en;
+.
+
+drugbank:hprdId a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "HPRD ID"@en;
+.
+
+drugbank:locus a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "locus"@en;
+.
+
+drugbank:molecularWeight a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label ""@en;
+.
+
+drugbank:name a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "name"@en;
+.
+
+drugbank:numberOfResidues a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "number of residues"@en;
+.
+
+drugbank:pdbId a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "PDB ID"@en;
+.
+
+drugbank:pdbIdPage a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "PDB ID page"@en;
+.
+
+drugbank:pathway a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "pathway"@en;
+.
+
+drugbank:proteinSequence a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "protein sequence"@en;
+.
+
+drugbank:reaction a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "reaction"@en;
+.
+
+drugbank:specificFunction a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "specific function"@en;
+.
+
+drugbank:swissprotId a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "SwissProt ID"@en;
+.
+
+drugbank:swissprotPage a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:anyURI;
+	rdfs:label "SwissProt ID page"@en;
+.
+
+drugbank:swissprotName a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "SwissProt name"@en;
+.
+
+drugbank:theoreticalPi a rdf:Property;
+	rdfs:domain drugbank:targets;
+	rdfs:range xsd:string;
+	rdfs:label "theoretical isoelectric point"@en;
+.
+
+drugbank:possibleDiseaseTarget a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "possible disease target"@en;
+.
+
+drugbank:brandedDrug a rdf:Property;
+	rdfs:domain drugbank:drugs;
+	rdfs:range xsd:anyURI;
+	rdfs:label "marketed drug"@en;
+.
