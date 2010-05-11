@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Silk>
+	<Prefix id="rdf" namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+	<Prefix id="rdfs" namespace="http://www.w3.org/2000/01/rdf-schema#" />
+	<Prefix id="foaf" namespace="http://xmlns.com/foaf/0.1/" />
+	<Prefix id="owl" namespace="http://www.w3.org/2002/07/owl#" />
+	<Prefix id="dbpedia-owl" namespace="http://dbpedia.org/ontology/" />
+	<Prefix id="dbpedia-prop" namespace="http://dbpedia.org/property/" />
+	<Prefix id="dc" namespace="http://purl.org/dc/terms/" />
+	<Prefix id="sider" namespace="http://www4.wiwiss.fu-berlin.de/sider/resource/sider/" />
+	<Prefix id="diseasome" namespace="http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/" />
+
+	<DataSource id="dbpedia">
+		<EndpointURI>http://www4.wiwiss.fu-berlin.de/diseasome/sparql</EndpointURI>
+		<DoCache>1</DoCache>
+		<RetryCount>100</RetryCount>
+		<RetryTime>5000</RetryTime>
+	</DataSource>
+
+	<DataSource id="sider">
+		<EndpointURI>http://www4.wiwiss.fu-berlin.de/sider/sparql</EndpointURI>
+		<DoCache>1</DoCache>
+		<RetryCount>100</RetryCount>
+		<RetryTime>5000</RetryTime>
+	</DataSource>
+
+	<LinkSpec id="organization">
+		<LinkType>owl:sameAs</LinkType>
+
+		<SourceDataset dataSource="dbpedia" var="a">
+			<RestrictTo>
+				?a rdf:type diseasome:diseases
+			</RestrictTo>
+		</SourceDataset>
+
+		<TargetDataset dataSource="sider" var="b">
+			<RestrictTo>
+				?b rdf:type sider:side_effects
+			</RestrictTo>
+		</TargetDataset>
+
+		<LinkCondition>
+			<MAX>
+				<Compare metric="maxSimilarityInSets">
+					<Param name="set1">
+						<Transform function="lowerCase">
+							<Param name="string">
+								<Transform function="regexReplace">
+									<Param name="string" path="?a/rdfs:label" />
+									<Param name="regex" value="_" />
+									<Param name="replace" value=" " />
+								</Transform>
+							</Param>
+						</Transform>
+					</Param>
+					<Param name="set2">
+						<Transform function="lowerCase">
+							<Param name="string" path="?b/sider:sideEffectName" />
+						</Transform>
+					</Param>
+					<Param name="submetric" value="jaroWinklerSimilarity" />
+				</Compare>
+
+				<Compare metric="maxSimilarityInSets" optional="1" weight="2">
+					<Param name="set1">
+						<Transform function="lowerCase">
+							<Param name="string">
+								<Transform function="regexReplace">
+									<Param name="string" path="?a/rdfs:label" />
+									<Param name="regex" value="_" />
+									<Param name="replace" value=" " />
+								</Transform>
+							</Param>
+						</Transform>
+					</Param>
+					<Param name="set2">
+						<Transform function="lowerCase">
+							<Param name="string">
+								<Transform function="regexReplace">
+									<Param name="string">
+										<Transform function="stripURIPrefix">
+											<Param name="string" path="?b\owl:sameAs" />
+										</Transform>
+									</Param>
+									<Param name="regex" value="_" />
+									<Param name="replace" value=" " />
+								</Transform>
+							</Param>
+						</Transform>
+					</Param>
+					<Param name="submetric" value="jaroWinklerSimilarity" />
+				</Compare>
+			</MAX>
+		</LinkCondition>
+
+		<Thresholds accept="0.95" verify="0.7" />
+		<LinkLimit max="1" method="metric_value" />
+		<Output acceptedLinks="sider_diseasome_accepted_links2.n3" verifyLinks="sider_diseasome_verify_links2.n3" mode="truncate" />
+	</LinkSpec>
+</Silk>

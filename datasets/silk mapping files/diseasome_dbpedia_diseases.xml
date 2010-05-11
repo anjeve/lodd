@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Silk>
+	<Prefix id="rdf" namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+	<Prefix id="rdfs" namespace="http://www.w3.org/2000/01/rdf-schema#" />
+	<Prefix id="foaf" namespace="http://xmlns.com/foaf/0.1/" />
+	<Prefix id="owl" namespace="http://www.w3.org/2002/07/owl#" />
+	<Prefix id="dbpedia-owl" namespace="http://dbpedia.org/ontology/" />
+	<Prefix id="dbpedia-prop" namespace="http://dbpedia.org/property/" />
+	<Prefix id="dc" namespace="http://purl.org/dc/terms/" />
+	<Prefix id="diseasome" namespace="http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/" />
+	<Prefix id="skos" namespace="http://www.w3.org/2004/02/skos/core#" />
+
+	<DataSource id="dbpedia">
+		<EndpointURI>http://dbpedia.org/sparql</EndpointURI>
+		<DoCache>1</DoCache>
+		<RetryCount>100</RetryCount>
+		<RetryTime>5000</RetryTime>
+	</DataSource>
+
+	<DataSource id="diseasome">
+		<EndpointURI>http://www4.wiwiss.fu-berlin.de/diseasome/sparql</EndpointURI>
+		<DoCache>1</DoCache>
+		<RetryCount>100</RetryCount>
+		<RetryTime>5000</RetryTime>
+	</DataSource>
+
+	<LinkSpec id="organization">
+		<LinkType>owl:sameAs</LinkType>
+
+		<SourceDataset dataSource="dbpedia" var="a">
+			<RestrictTo>
+				?a rdf:type dbpedia-owl:Disease
+			</RestrictTo>
+		</SourceDataset>
+
+		<TargetDataset dataSource="diseasome" var="b">
+			<RestrictTo>
+				?b rdf:type diseasome:diseases
+			</RestrictTo>
+		</TargetDataset>
+
+		<LinkCondition>
+			<AVG>
+				<MAX>
+					<Compare metric="jaroSimilarity" weight="2">
+						<Param name="str1">
+							<Transform function="lowerCase">
+								<Param name="string" path="?a/rdfs:label[@lang 'en']" />
+							</Transform>
+						</Param>
+						<Param name="str2">
+							<Transform function="lowerCase">
+								<Param name="string" path="?b/rdfs:label" />
+							</Transform>
+						</Param>
+					</Compare>
+					<Compare metric="maxSimilarityInSets" optional="1" weight="2">
+						<Param name="set1">
+							<Transform function="lowerCase">
+								<Param name="string" path="?b/rdfs:label" />
+							</Transform>
+						</Param>
+						<Param name="set2">
+							<Transform function="lowerCase">
+								<Param name="string">
+		                            <Transform function="regexReplace">
+		                                <Param name="string">
+		                                    <Transform function="stripURIPrefix">
+		                                        <Param name="string" path="?a\dbpedia-prop:redirect" />
+		                                    </Transform>
+		                                </Param>
+		                                <Param name="regex" value="_" />
+		                                <Param name="replace" value=" " />
+		                            </Transform>
+								</Param>
+							</Transform>
+						</Param>
+						<Param name="submetric" value="jaroWinklerSimilarity" />
+					</Compare>
+				</MAX>
+				<Compare metric="stringEquality" optional="1" weight="1">
+					<Param name="str1">
+						<Transform function="regexReplace">
+							<Param name="string">
+								<Transform function="stripURIPrefix">
+									<Param name="string" path="?a/dbpedia-owl:omimLink" />
+								</Transform>
+							</Param>
+							<Param name="regex" value="omim:" />
+							<Param name="replace" value="" />
+						</Transform>
+					</Param>
+					<Param name="str2">
+						<Transform function="regexReplace">
+							<Param name="string">
+								<Transform function="stripURIPrefix">
+									<Param name="string" path="?b/diseasome:omim" />
+								</Transform>
+							</Param>
+							<Param name="regex" value="omim:" />
+							<Param name="replace" value="" />
+						</Transform>
+					</Param>
+				</Compare>
+			</AVG>
+		</LinkCondition>
+
+		<Thresholds accept="0.9" verify="0.7" />
+		<LinkLimit max="1" method="metric_value" />
+		<Output acceptedLinks="diseasome_dbpedia_diseases_accepted_links.n3" verifyLinks="diseasome_dbpedia_diseases_verify_links.n3" mode="truncate" />
+	</LinkSpec>
+</Silk>
