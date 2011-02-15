@@ -11,8 +11,8 @@
 @prefix dbpedia: <http://dbpedia.org/ontology/> .
 @prefix drugbank: <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/> .
 @prefix diseasome: <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/> .
-@prefix vocabClass: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/class/> .
-@prefix vocabProperty: <http://www4.wiwiss.fu-berlin.de/drugbank/vocab/resource/property/> .
+@prefix vocabClass: <http://www4.wiwiss.fu-berlin.de/dailymed/vocab/resource/class/> .
+@prefix vocabProperty: <http://www4.wiwiss.fu-berlin.de/dailymed/vocab/resource/property/> .
 
 map:Server a d2r:Server;
     rdfs:label "D2R Server publishing the Dailymed Dataset";
